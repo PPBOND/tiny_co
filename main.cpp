@@ -3,11 +3,6 @@
 #include<string>
 using namespace std;
 
-co_struct * co1;
-co_struct * co2;
-co_struct * co3;
-extern co_struct* current;
-
 
 void fun1(void *arg)
 {
@@ -50,6 +45,9 @@ void fun3(void *arg)
 int main()
 {
    
+    co_struct * co1;
+    co_struct * co2;
+    co_struct * co3;
     
     string  str1 = "call func1";
     string  str2 = "call func2";

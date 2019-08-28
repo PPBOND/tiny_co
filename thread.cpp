@@ -83,8 +83,7 @@ void co_func(co_struct* co)
 
 }
 
-
-int co_create(co_struct* &co, Fun func, void *arg)
+void co_main_init()
 {
     if(env.call_stack[0] == NULL)
     {
@@ -94,7 +93,13 @@ int co_create(co_struct* &co, Fun func, void *arg)
         env.call_stack[env.index++] = &co_main;
 
     }
+}
 
+
+int co_create(co_struct* &co, Fun func, void *arg)
+{
+    
+    co_main_init();
     co = new co_struct;
     getcontext(&co->context);
     co->arg    = arg;
