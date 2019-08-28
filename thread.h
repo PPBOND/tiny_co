@@ -18,7 +18,7 @@ printf("[DEBUG co_id=%d:%s:%d:%s] " fmt"\n",get_current()->co_id,__FILE__, __LIN
 #endif
 
  
-enum class Status {INIT=1,READY,RUNNING,SLEEPING,EXIT};
+enum class Status {INIT = 1,READY,RUNNING,SLEEPING,EXIT};
 typedef void (*Fun)(void* arg);
 #define Default_size 8096
 
@@ -28,7 +28,7 @@ typedef void (*Fun)(void* arg);
 typedef struct co_struct
 {
     void* arg = NULL;
-    Fun fun = NULL;
+    Fun fun   = NULL;
     unsigned int co_id;
     ucontext_t   context; 
     bool is_end = false; 
@@ -43,6 +43,7 @@ typedef struct co_env
      int index;
 }co_env;
 
+//管理协程休眠结构ß
 typedef struct time_co
 {
     co_struct * co;

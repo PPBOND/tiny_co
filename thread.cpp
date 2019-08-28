@@ -67,7 +67,6 @@ co_struct* get_current()
     return env.call_stack[env.index-1];
 }
 
-
 void co_func(co_struct* co)
 {
     if(co->fun)
