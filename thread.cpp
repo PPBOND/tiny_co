@@ -1,8 +1,8 @@
-#include"thread.h"
-#include<unistd.h>
-#include<time.h>
-#include<list>
-#include<unistd.h>
+#include "thread.h"
+#include <unistd.h>
+#include <time.h>
+#include <list>
+#include <unistd.h>
 #include <errno.h>
 using namespace std;
 
@@ -22,6 +22,10 @@ static co_struct co_main;
 //协程休眠存放的链表
 static std::list<time_co* > sleep_list;
 
+//协程等待时需要用到,唤醒则在epoll_wait后.
+std::list<co_struct *> wait_list;
+
+
 
 void co_sleep(int sleep_time)
 {
@@ -34,8 +38,6 @@ void co_sleep(int sleep_time)
     co_yield();
 
     LOG_DEBUG("co_sleep end");
-
-
 }
 
 
@@ -54,7 +56,6 @@ void co_wake()
             work_deques.push_back((*iter)->co);
             sleep_list.erase(iter);
             LOG_DEBUG("sleep_list.size=%d",sleep_list.size());
-            
         }
         
     }
@@ -67,23 +68,23 @@ co_struct* get_current()
     return env.call_stack[env.index-1];
 }
 
+
 void co_func(co_struct* co)
 {
     if(co->fun)
     {
-        Fun fn=co->fun;
+        Fun fn = co->fun;
         fn(co->arg);
     }
 
     co_struct * now  = env.call_stack[env.index-1];
-    co_struct * prev = env.call_stack[env.index-2];
     now->is_end = true;
     LOG_DEBUG("over");
     co_yield();
 
 }
 
-void co_main_init()
+void co_init()
 {
     if(env.call_stack[0] == NULL)
     {
@@ -91,15 +92,15 @@ void co_main_init()
         co_main.co_id  = (size_t)&co_main;
         co_main.status = Status::RUNNING;
         env.call_stack[env.index++] = &co_main;
-
     }
 }
 
 
+
 int co_create(co_struct* &co, Fun func, void *arg)
 {
+  
     
-    co_main_init();
     co = new co_struct;
     getcontext(&co->context);
     co->arg    = arg;
@@ -131,8 +132,6 @@ void ready_co_to_queue()
             LOG_DEBUG("work.size()=%d", work_deques.size());
         }
     }
-  
-
 }
 
 void schedule()
@@ -144,17 +143,46 @@ void schedule()
         co_wake();
         ready_co_to_queue();
     
-        if(work_deques.empty() && sleep_list.empty())
+        if(work_deques.empty() && sleep_list.empty() && wait_list.empty())
         {
             LOG_DEBUG("work_deues.empty, schedule finish");
             return;
         }
+/*
+       
+*/     
 
-        if(work_deques.empty() && !sleep_list.empty())
+        env.ev_manger.wait_event();
+        for(int i = 0; i< env.ev_manger.active_num; ++i)
+        {
+            int fd = ev->active_ev[i].data.fd;
+            for(auto list_item = wait_list.begin(); list_item != wait_list.end();)
+            {
+                if(list_item->ev.fd == fd)
+                {
+                    list_item->status = Status::READY;
+                    list_item = wait_list.erase(list_item);
+                    break;
+                }
+                else
+                    ++ list_item;
+            }
+
+        }
+        
+        ready_co_to_queue();
+        if(work_deques.empty() && (!sleep_list.empty() || !wait_list.empty()) )
         {
             continue;
         }
-       
+        else if(work_deques.empty() && sleep_list.empty() && wait_list.empty())
+        {
+            return;
+        }
+        
+
+
+  
         co_struct * next_co = work_deques.front();
         work_deques.pop_front(); 
     
@@ -188,7 +216,6 @@ void  co_yield()
     swapcontext(&now->context, &prev->context);
     now->status = Status::RUNNING;
 
-    
 }
 
 
@@ -227,9 +254,44 @@ void co_releae(co_struct* co)
         }
         else
             iter++;
-
     }
 
     LOG_DEBUG("co_deques.size=%d", co_deques.size());
 }
 
+
+
+void ev_register_to_manager(int fd, int event,int ops)
+{
+    co_struct* now = get_current();
+    now.ev.init_event(fd, event, ops);
+    env.ev_manger.updateEvent(now->ev);
+    now->status = Status::WAITING;
+   co_yield();
+}
+
+int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
+{
+   
+    int sockfd =-1;
+    ev_register_to_manager(fd,EPOLLIN, EPOLL_CTL_ADD | EPOLLONESHOT);
+    sockfd = accept(fd, addr, len);
+	exit_if(sockfd < 0, "accept failed");
+}
+
+
+
+ssize_t co_recv(int fd, void *buf, size_t len, int flags) {
+	
+
+	ev_register_to_manager(fd, POLLIN | POLLERR | POLLHUP,EPOLL_CTL_ADD);
+
+	int ret = recv(fd, buf, len, flags);
+	if (ret < 0) {
+		//if (errno == EAGAIN) return ret;
+		if (errno == ECONNRESET) return -1;
+		//printf("recv error : %d, ret : %d\n", errno, ret);
+		
+	}
+	return ret;
+}

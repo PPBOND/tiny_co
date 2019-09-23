@@ -3,26 +3,32 @@
 #include<string>
 using namespace std;
 
+co_struct * co1;
+co_struct * co2;
+co_struct * co3;
+extern co_struct* current;
+
 
 void fun1(void *arg)
 {
-    while(1)
+   // while(1)
     {
         string f1_str = *(string*)arg;
         printf("%s\n\n",f1_str.c_str());
-        co_sleep(1);
+        co_resume(co2);
         printf("%s\n\n",f1_str.c_str());
+        co_yield();
        
     }
 }
 
 void fun2(void *arg)
 {
-    while(1)
+   // while(1)
     {
         string f2_str = *(string*)arg;
         printf("%s\n\n",f2_str.c_str());
-        co_sleep(1);
+        co_resume(co1);
         printf("%s\n\n",f2_str.c_str());
         
         
@@ -45,9 +51,6 @@ void fun3(void *arg)
 int main()
 {
    
-    co_struct * co1;
-    co_struct * co2;
-    co_struct * co3;
     
     string  str1 = "call func1";
     string  str2 = "call func2";
@@ -58,7 +61,7 @@ int main()
         
         co_create(co1, fun1,&str1);
         co_create(co2, fun2,&str2);
-        co_create(co3, fun3,&str3);
+      //  co_create(co3, fun3,&str3);
 
     }
   
