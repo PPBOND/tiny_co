@@ -38,3 +38,24 @@ int Epoll_event::wait_event()
     return_if(active_num < 0, "epoll_wait error");
     return active_num;
 }
+
+int Epoll_event::wake_event()
+{
+    for(int i = 0; i< this->active_num; ++i)
+    {
+        int fd = active_ev[i].data.fd;
+        for(auto list_item = wait_list.begin(); list_item != wait_list.end();)
+        {
+            if((*list_item)->ev.fd == fd)
+            {
+                (*list_item)->status = Status::READY;
+                list_item = wait_list.erase(list_item);
+                break;
+            }
+            else
+                ++ list_item;
+        }
+    }
+
+}
+

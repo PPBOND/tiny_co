@@ -1,3 +1,4 @@
+#pragma once
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -11,6 +12,9 @@
 #include <unistd.h>
 #include "comm_tools.h"
 #include "socket.h"
+
+
+
 class Event
 {
 public:
@@ -31,7 +35,7 @@ public:
     int create(int maxev = 20, int time_out = 10000);
     int updateEvent(Event * ev);
     int wait_event();
-
+    int wake_event();
 
     int maxevent;
     int timeout;

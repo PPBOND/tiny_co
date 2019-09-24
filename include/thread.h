@@ -8,6 +8,11 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <list>
+
+#include <errno.h>
+
 
 
 
@@ -44,6 +49,28 @@ typedef struct time_co
     co_struct * co;
     struct timeval tv;
 }time_co;
+
+
+
+//调用栈关系
+extern co_env  env;
+
+//用于保存所有协程
+extern std::deque<co_struct*> co_deques;
+
+//准备就绪的协程跟正在运行的协程
+extern std::deque<co_struct*> work_deques;
+
+//主进程上下文,主要用来保存切换的上下文
+extern co_struct co_main;
+
+//协程休眠存放的链表
+extern std::list<time_co* > sleep_list;
+
+//协程等待时需要用到,唤醒则在epoll_wait后.
+extern std::list<co_struct *> wait_list;
+
+
 
 void co_init();
 void co_yield();

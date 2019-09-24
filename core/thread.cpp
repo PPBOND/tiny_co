@@ -1,31 +1,24 @@
 #include "thread.h"
 #include <unistd.h>
-#include <time.h>
-#include <list>
-#include <unistd.h>
-#include <errno.h>
+
 using namespace std;
 
-
-//调用栈关系
-static co_env  env;
+ co_env  env;
 
 //用于保存所有协程
-static std::deque<co_struct*> co_deques;
+ std::deque<co_struct*> co_deques;
 
 //准备就绪的协程跟正在运行的协程
-static std::deque<co_struct*> work_deques;
+std::deque<co_struct*> work_deques;
 
 //主进程上下文,主要用来保存切换的上下文
-static co_struct co_main;
+ co_struct co_main;
 
 //协程休眠存放的链表
-static std::list<time_co* > sleep_list;
+ std::list<time_co* > sleep_list;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
-std::list<co_struct *> wait_list;
-
-
+ std::list<co_struct *> wait_list;
 
 void co_sleep(int sleep_time)
 {
@@ -92,6 +85,7 @@ void co_init()
         co_main.co_id  = (size_t)&co_main;
         co_main.status = Status::RUNNING;
         env.call_stack[env.index++] = &co_main;
+        env.ev_manger.create(20,1000);
     }
 }
 
@@ -99,7 +93,6 @@ void co_init()
 
 int co_create(co_struct* &co, Fun func, void *arg)
 {
-  
     
     co = new co_struct;
     getcontext(&co->context);
@@ -148,27 +141,10 @@ void schedule()
             LOG_DEBUG("work_deues.empty, schedule finish");
             return;
         }
-/*
-       
-*/     
+
 
         env.ev_manger.wait_event();
-        for(int i = 0; i< env.ev_manger.active_num; ++i)
-        {
-            int fd = ev->active_ev[i].data.fd;
-            for(auto list_item = wait_list.begin(); list_item != wait_list.end();)
-            {
-                if(list_item->ev.fd == fd)
-                {
-                    list_item->status = Status::READY;
-                    list_item = wait_list.erase(list_item);
-                    break;
-                }
-                else
-                    ++ list_item;
-            }
-
-        }
+        env.ev_manger.wake_event();
         
         ready_co_to_queue();
         if(work_deques.empty() && (!sleep_list.empty() || !wait_list.empty()) )
@@ -180,9 +156,6 @@ void schedule()
             return;
         }
         
-
-
-  
         co_struct * next_co = work_deques.front();
         work_deques.pop_front(); 
     
@@ -264,19 +237,20 @@ void co_releae(co_struct* co)
 void ev_register_to_manager(int fd, int event,int ops)
 {
     co_struct* now = get_current();
-    now.ev.init_event(fd, event, ops);
-    env.ev_manger.updateEvent(now->ev);
+    now->ev.init_event(fd, event, ops);
+    env.ev_manger.updateEvent(&now->ev);
     now->status = Status::WAITING;
-   co_yield();
+    co_yield();
 }
 
 int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 {
    
-    int sockfd =-1;
+    int sockfd = -1;
     ev_register_to_manager(fd,EPOLLIN, EPOLL_CTL_ADD | EPOLLONESHOT);
     sockfd = accept(fd, addr, len);
 	exit_if(sockfd < 0, "accept failed");
+    return sockfd;
 }
 
 
@@ -284,7 +258,7 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 ssize_t co_recv(int fd, void *buf, size_t len, int flags) {
 	
 
-	ev_register_to_manager(fd, POLLIN | POLLERR | POLLHUP,EPOLL_CTL_ADD);
+	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP,EPOLL_CTL_ADD);
 
 	int ret = recv(fd, buf, len, flags);
 	if (ret < 0) {
