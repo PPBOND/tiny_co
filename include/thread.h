@@ -48,9 +48,20 @@ typedef struct time_co
 {
     co_struct * co;
     struct timeval tv;
+    int get_time_with_usec() const
+    {
+        return tv.tv_sec*1000000 + tv.tv_usec;
+    }
 }time_co;
 
+struct cmp_time
+{
+    bool operator()(time_co* &lhs, time_co* &rhs)
+    {
+        return lhs->get_time_with_usec() > rhs->get_time_with_usec();
+    }
 
+};
 
 //调用栈关系
 extern co_env  env;
@@ -64,11 +75,13 @@ extern std::deque<co_struct*> work_deques;
 //主进程上下文,主要用来保存切换的上下文
 extern co_struct co_main;
 
-//协程休眠存放的链表
-extern std::list<time_co* > sleep_list;
+//协程休眠存放的
+extern std::priority_queue<time_co*, std::vector<time_co*>, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
 extern std::list<co_struct *> wait_list;
+
+
 
 
 

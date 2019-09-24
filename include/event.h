@@ -36,9 +36,9 @@ public:
     int updateEvent(Event * ev);
     int wait_event();
     int wake_event();
-
+    int get_min_time();
     int maxevent;
-    int timeout;
+    int timeout;  //取决于协程最小睡眠时间，
     int epoll_fd;
     int active_num;
     struct epoll_event active_ev[100];

@@ -33,8 +33,8 @@ int Epoll_event::create(int maxev, int time_out)
 
 int Epoll_event::wait_event()
 {
-    printf("epoll wait\n");
-    active_num = epoll_wait(epoll_fd, active_ev, maxevent, 10000000);
+    printf("epoll wait, get_min_time=%d\n",get_min_time());
+    active_num = epoll_wait(epoll_fd, active_ev, maxevent, get_min_time());
     return_if(active_num < 0, "epoll_wait error");
     return active_num;
 }
@@ -59,3 +59,21 @@ int Epoll_event::wake_event()
 
 }
 
+
+
+int Epoll_event::get_min_time()
+{
+    struct timeval  tv;
+    gettimeofday(&tv,NULL);   
+
+    
+    if(time_queue.empty())
+        return 5000;
+    auto top_co = time_queue.top();
+
+    LOG_DEBUG("top_co->co_id=%d", top_co->co->co_id);
+    int time_diff = (top_co->tv.tv_sec - tv.tv_sec)*1000 + (top_co->tv.tv_usec - tv.tv_usec)/1000;
+    return time_diff > 0 ? time_diff : 0; 
+    
+
+}

@@ -1,0 +1,36 @@
+[DEBUG co_id=6335328:thread.cpp:123:ready_co_to_queue] co->id=6812976
+[DEBUG co_id=6335328:thread.cpp:125:ready_co_to_queue] work.size()=1
+[DEBUG co_id=6335328:thread.cpp:123:ready_co_to_queue] co->id=6822080
+[DEBUG co_id=6335328:thread.cpp:125:ready_co_to_queue] work.size()=2
+[DEBUG co_id=6335328:thread.cpp:165:schedule] next_co= 6812976
+call func1
+
+[DEBUG co_id=6812976:thread.cpp:183:co_yield] will runing=6335328
+[DEBUG co_id=6335328:thread.cpp:171:schedule] schedule end 
+[DEBUG co_id=6335328:thread.cpp:165:schedule] next_co= 6822080
+call func2
+
+[DEBUG co_id=6822080:thread.cpp:183:co_yield] will runing=6335328
+[DEBUG co_id=6335328:thread.cpp:171:schedule] schedule end 
+[DEBUG co_id=6335328:thread.cpp:165:schedule] next_co= 6812976
+[DEBUG co_id=6812976:thread.cpp:33:co_sleep] co_sleep end
+call func1
+
+[DEBUG co_id=6812976:thread.cpp:183:co_yield] will runing=6335328
+[DEBUG co_id=6335328:thread.cpp:171:schedule] schedule end 
+[DEBUG co_id=6335328:thread.cpp:165:schedule] next_co= 6822080
+[DEBUG co_id=6822080:thread.cpp:33:co_sleep] co_sleep end
+call func2
+
+[DEBUG co_id=6822080:thread.cpp:75:co_func] over
+[DEBUG co_id=6822080:thread.cpp:183:co_yield] will runing=6335328
+[DEBUG co_id=6335328:thread.cpp:235:co_releae] co_deques.size=1
+[DEBUG co_id=6335328:thread.cpp:171:schedule] schedule end 
+[DEBUG co_id=6335328:thread.cpp:123:ready_co_to_queue] co->id=6812976
+[DEBUG co_id=6335328:thread.cpp:125:ready_co_to_queue] work.size()=1
+[DEBUG co_id=6335328:thread.cpp:165:schedule] next_co= 6812976
+[DEBUG co_id=6812976:thread.cpp:75:co_func] over
+[DEBUG co_id=6812976:thread.cpp:183:co_yield] will runing=6335328
+[DEBUG co_id=6335328:thread.cpp:235:co_releae] co_deques.size=0
+[DEBUG co_id=6335328:thread.cpp:171:schedule] schedule end 
+[DEBUG co_id=6335328:thread.cpp:143:schedule] work_deues.empty, schedule finish

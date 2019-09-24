@@ -3,22 +3,22 @@
 
 using namespace std;
 
- co_env  env;
+co_env  env;
 
 //用于保存所有协程
- std::deque<co_struct*> co_deques;
+std::deque<co_struct*> co_deques;
 
 //准备就绪的协程跟正在运行的协程
 std::deque<co_struct*> work_deques;
 
 //主进程上下文,主要用来保存切换的上下文
- co_struct co_main;
+co_struct co_main;
 
 //协程休眠存放的链表
- std::list<time_co* > sleep_list;
+std::priority_queue<time_co*, std::vector<time_co*>, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
- std::list<co_struct *> wait_list;
+std::list<co_struct *> wait_list;
 
 void co_sleep(int sleep_time)
 {
@@ -27,7 +27,7 @@ void co_sleep(int sleep_time)
     gettimeofday(&t_co.tv,NULL);
     t_co.tv.tv_sec += sleep_time;
     t_co.co->status = Status::SLEEPING;
-    sleep_list.push_back(&t_co);
+    time_queue.push(&t_co);
     co_yield();
 
     LOG_DEBUG("co_sleep end");
@@ -39,19 +39,22 @@ void co_wake()
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
 
-    for(auto list_iter = sleep_list.begin(); list_iter != sleep_list.end();)
+    while(!time_queue.empty())
     {
-        auto iter = list_iter++;
-        if((*iter)->tv.tv_sec < tv.tv_sec)
-        {
-            LOG_DEBUG("prev.sec=%d, now.sec=%d",(*iter)->tv.tv_sec, tv.tv_sec);
-            (*iter)->co->status = Status::READY;
-            work_deques.push_back((*iter)->co);
-            sleep_list.erase(iter);
-            LOG_DEBUG("sleep_list.size=%d",sleep_list.size());
-        }
+        auto * top_co = time_queue.top();
+        int diff_time = top_co->get_time_with_usec() - (tv.tv_sec*1000000 + tv.tv_usec);
+        LOG_DEBUG("diff_time =%d",diff_time  );
         
+        if(diff_time < 0)
+        {
+            top_co->co->status = Status::READY;
+            work_deques.push_back(top_co->co);
+            time_queue.pop();
+        }
+        else
+            return ;
     }
+
 }
 
 
@@ -135,8 +138,10 @@ void schedule()
         
         co_wake();
         ready_co_to_queue();
+        if(!work_deques.empty())
+            goto resume;
     
-        if(work_deques.empty() && sleep_list.empty() && wait_list.empty())
+        if(work_deques.empty() && time_queue.empty() && wait_list.empty())
         {
             LOG_DEBUG("work_deues.empty, schedule finish");
             return;
@@ -147,15 +152,16 @@ void schedule()
         env.ev_manger.wake_event();
         
         ready_co_to_queue();
-        if(work_deques.empty() && (!sleep_list.empty() || !wait_list.empty()) )
+        if(work_deques.empty() && (!time_queue.empty() || !wait_list.empty()) )
         {
             continue;
         }
-        else if(work_deques.empty() && sleep_list.empty() && wait_list.empty())
+        else if(work_deques.empty() && time_queue.empty() && wait_list.empty())
         {
             return;
         }
-        
+    
+ resume:
         co_struct * next_co = work_deques.front();
         work_deques.pop_front(); 
     
