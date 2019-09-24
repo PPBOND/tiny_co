@@ -46,7 +46,6 @@ int Epoll_event::wake_event()
     for(int i = 0; i< this->active_num; ++i)
     {
         int fd = active_ev[i].data.fd;
-        LOG_DEBUG("ready_fd =%d \n",fd);
         for(auto list_item = wait_list.begin(); list_item != wait_list.end();)
         {
             LOG_DEBUG("ev_fd =%d \n",(*list_item)->ev.fd );

@@ -8,7 +8,7 @@ using namespace std;
 
 void handleRead(void *rhs)
 {
-    int fd = (int ) rhs;
+    int fd = reinterpret_cast<long>(rhs);
     LOG_DEBUG("handle read \n");
     char buf[1024];
     co_recv(fd, buf,1024);
@@ -17,37 +17,24 @@ void handleRead(void *rhs)
     
 }
 
-void handleWrite(void *rhs)
-{
-
-}
-
 
 void handleAccept(void * rhs) 
 {
     
-    co_struct *event_co;
-    int fd = (int) rhs;
-    
+    int fd = reinterpret_cast<long>(rhs);
     LOG_DEBUG("listen_fd=%d", fd);
-
     while(1)
-    {
+    {   
+        co_struct *event_co;
         struct sockaddr_in raddr;
         socklen_t rsz = sizeof(raddr);
         int cfd = co_accept(fd, (struct sockaddr *) &raddr, &rsz);
         exit_if(cfd < 0, "accept failed");
-        sockaddr_in peer, local;
-        socklen_t alen = sizeof(peer);
-        int r = getpeername(cfd, (sockaddr *) &peer, &alen);
-        exit_if(r < 0, "getpeername failed");
-        LOG_DEBUG("accept a connection from %s\n", inet_ntoa(raddr.sin_addr));
-        co_create(event_co, handleRead, (void*)cfd);
+        co_create(event_co, handleRead, (void*)(size_t)cfd);
     }
 
 
 }
-
 
 
 int main()
@@ -57,8 +44,7 @@ int main()
     ListenSocket sockfd;
     sockfd.create(9898,"0.0.0.0");
     LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
-    co_create(event_co, handleAccept, (void*)sockfd.fd);
-   // env.ev_manger.updateEvent(&listen_ev);
+    co_create(event_co, handleAccept, (void*)(size_t)sockfd.fd);
     schedule();
     
 
