@@ -96,6 +96,8 @@ co_struct* get_current();
 
 void ev_register_to_manager(co_struct * co);
 int  co_create(co_struct* &co, Fun func, void *arg);
+ssize_t co_recv(int fd, void *buf, size_t len);
+int co_accept(int fd ,struct sockaddr* addr, socklen_t *len);
 
 
 

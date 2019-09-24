@@ -7,6 +7,7 @@
     epoll_ev.events  = events; 
     epoll_ev.data.fd = sock_fd;
     this->ops  = ops;
+    fd = sock_fd;
  }
 
 
@@ -33,9 +34,10 @@ int Epoll_event::create(int maxev, int time_out)
 
 int Epoll_event::wait_event()
 {
-    printf("epoll wait, get_min_time=%d\n",get_min_time());
+    LOG_DEBUG("epoll wait, get_min_time=%d\n",get_min_time());
     active_num = epoll_wait(epoll_fd, active_ev, maxevent, get_min_time());
     return_if(active_num < 0, "epoll_wait error");
+    LOG_DEBUG("epoll wait, active_num=%d\n",active_num);
     return active_num;
 }
 
@@ -44,8 +46,10 @@ int Epoll_event::wake_event()
     for(int i = 0; i< this->active_num; ++i)
     {
         int fd = active_ev[i].data.fd;
+        LOG_DEBUG("ready_fd =%d \n",fd);
         for(auto list_item = wait_list.begin(); list_item != wait_list.end();)
         {
+            LOG_DEBUG("ev_fd =%d \n",(*list_item)->ev.fd );
             if((*list_item)->ev.fd == fd)
             {
                 (*list_item)->status = Status::READY;

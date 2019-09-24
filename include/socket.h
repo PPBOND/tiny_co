@@ -15,12 +15,12 @@
 class Socket
 {
 public:
-    Socket():fd(-1){}
-    int  get_fd() { return fd;}
+    Socket(){}
+  
     void setnonblock();
 
-
     int fd;
+   
 };
 
 class ListenSocket: public Socket
@@ -30,6 +30,10 @@ public:
     {
         memset(&addr, 0, sizeof(addr));
     }
+    int  get_fd() { return fd;}
     void create(int port, const char *ip);
     struct sockaddr_in addr;
+
+
+     
 };

@@ -41,15 +41,15 @@ void co_wake()
 
     while(!time_queue.empty())
     {
-        auto * top_co = time_queue.top();
+        time_co * top_co = time_queue.top();
         int diff_time = top_co->get_time_with_usec() - (tv.tv_sec*1000000 + tv.tv_usec);
-        LOG_DEBUG("diff_time =%d",diff_time  );
-        
+        LOG_DEBUG("diff_time =%d",diff_time);
         if(diff_time < 0)
         {
+            time_queue.pop();
             top_co->co->status = Status::READY;
             work_deques.push_back(top_co->co);
-            time_queue.pop();
+            
         }
         else
             return ;
@@ -77,7 +77,6 @@ void co_func(co_struct* co)
     now->is_end = true;
     LOG_DEBUG("over");
     co_yield();
-
 }
 
 void co_init()
@@ -119,7 +118,7 @@ void ready_co_to_queue()
     if(!work_deques.empty())
         return;
     
-    for(auto co: co_deques)
+    for(auto& co: co_deques)
     {
         if(co->status == Status::READY)
         {
@@ -152,19 +151,19 @@ void schedule()
         env.ev_manger.wake_event();
         
         ready_co_to_queue();
+        
+        if(!work_deques.empty())
+            goto resume;
         if(work_deques.empty() && (!time_queue.empty() || !wait_list.empty()) )
-        {
             continue;
-        }
         else if(work_deques.empty() && time_queue.empty() && wait_list.empty())
-        {
             return;
-        }
+        
     
  resume:
         co_struct * next_co = work_deques.front();
         work_deques.pop_front(); 
-    
+
         LOG_DEBUG("next_co= %d", next_co->co_id);
         co_resume(next_co);
 
@@ -209,7 +208,7 @@ void co_resume(co_struct* co)
 
     env.call_stack[env.index++] = co;
 
-    auto * prev  = env.call_stack[env.index -2];
+    co_struct * prev  = env.call_stack[env.index -2];
     co->status   = Status::RUNNING;    
     prev->status = Status::READY;
     swapcontext(&prev->context, &co->context);
@@ -242,10 +241,12 @@ void co_releae(co_struct* co)
 
 void ev_register_to_manager(int fd, int event,int ops)
 {
+    LOG_DEBUG("ev_register_to_manager fd =%d, event=%d, ops=%d",fd, event, ops );
     co_struct* now = get_current();
     now->ev.init_event(fd, event, ops);
     env.ev_manger.updateEvent(&now->ev);
     now->status = Status::WAITING;
+    wait_list.push_back(now);
     co_yield();
 }
 
@@ -253,7 +254,7 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 {
    
     int sockfd = -1;
-    ev_register_to_manager(fd,EPOLLIN, EPOLL_CTL_ADD | EPOLLONESHOT);
+    ev_register_to_manager(fd,EPOLLIN, EPOLL_CTL_ADD);
     sockfd = accept(fd, addr, len);
 	exit_if(sockfd < 0, "accept failed");
     return sockfd;
@@ -261,12 +262,12 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 
 
 
-ssize_t co_recv(int fd, void *buf, size_t len, int flags) {
+ssize_t co_recv(int fd, void *buf, size_t len) {
 	
 
 	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP,EPOLL_CTL_ADD);
 
-	int ret = recv(fd, buf, len, flags);
+	int ret = read(fd, buf, len);
 	if (ret < 0) {
 		//if (errno == EAGAIN) return ret;
 		if (errno == ECONNRESET) return -1;

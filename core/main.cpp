@@ -1,51 +1,66 @@
+#include "socket.h"
 #include "thread.h"
-#include<unistd.h>
-#include<string>
+#include "event.h"
+#include <string>
+static Event listen_ev;
 using namespace std;
 
-co_struct * co1;
-co_struct * co2;
-co_struct * co3;
-extern co_struct* current;
 
-
-void fun1(void *arg)
+void handleRead(void *rhs)
 {
-   // while(1)
+    int fd = (int ) rhs;
+    LOG_DEBUG("handle read \n");
+    char buf[1024];
+    co_recv(fd, buf,1024);
+    close(fd);
+    LOG_DEBUG("recv_buf=%s\n",buf);
+    
+}
+
+void handleWrite(void *rhs)
+{
+
+}
+
+
+void handleAccept(void * rhs) 
+{
+    
+    co_struct *event_co;
+    int fd = (int) rhs;
+    
+    LOG_DEBUG("listen_fd=%d", fd);
+
+    while(1)
     {
-        string f1_str = *(string*)arg;
-        printf("%s\n\n",f1_str.c_str());
-        co_sleep(4);
-        printf("%s\n\n",f1_str.c_str());
-        co_yield();
-       
+        struct sockaddr_in raddr;
+        socklen_t rsz = sizeof(raddr);
+        int cfd = co_accept(fd, (struct sockaddr *) &raddr, &rsz);
+        exit_if(cfd < 0, "accept failed");
+        sockaddr_in peer, local;
+        socklen_t alen = sizeof(peer);
+        int r = getpeername(cfd, (sockaddr *) &peer, &alen);
+        exit_if(r < 0, "getpeername failed");
+        LOG_DEBUG("accept a connection from %s\n", inet_ntoa(raddr.sin_addr));
+        co_create(event_co, handleRead, (void*)cfd);
     }
+
+
 }
 
-void fun2(void *arg)
-{
- 
-        string f2_str = *(string*)arg;
-        printf("%s\n\n",f2_str.c_str());
-        co_sleep(2);
-        printf("%s\n\n",f2_str.c_str());
-        
-        
-  
-}
 
 
 int main()
-{
-   
+{   
+    co_struct *event_co;
     co_init();
-    string  str1 = "call func1";
-    string  str2 = "call func2";
- 
-    co_create(co1, fun1,&str1);
-    co_create(co2, fun2,&str2);
-
+    ListenSocket sockfd;
+    sockfd.create(9898,"0.0.0.0");
+    LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
+    co_create(event_co, handleAccept, (void*)sockfd.fd);
+   // env.ev_manger.updateEvent(&listen_ev);
     schedule();
+    
 
     return 0;
 }
