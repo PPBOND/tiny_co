@@ -75,7 +75,7 @@ int Epoll_event::get_min_time()
         return 5000;
 
     auto top_co = time_queue.top();
-    LOG_DEBUG("top_co->co_id=%d", top_co->co->co_id);
+    LOG_DEBUG("top_co->co_id=%d", top_co->co_id);
     int time_diff = (top_co->tv.tv_sec - tv.tv_sec)*1000 + (top_co->tv.tv_usec - tv.tv_usec)/1000;
     return time_diff > 0 ? time_diff : 0; 
 

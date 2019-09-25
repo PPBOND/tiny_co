@@ -31,6 +31,7 @@ void handleAccept(void * rhs)
         int cfd = co_accept(fd, (struct sockaddr *) &raddr, &rsz);
         exit_if(cfd < 0, "accept failed");
         co_create(event_co, handleRead, (void*)(size_t)cfd);
+        LOG_DEBUG("read_co=%d", event_co->co_id);
     }
 
 
@@ -39,14 +40,13 @@ void handleAccept(void * rhs)
 
 int main()
 {   
-    co_struct *event_co;
     co_init();
+    co_struct *event_co;
     ListenSocket sockfd;
     sockfd.create(9898,"0.0.0.0");
     LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
     co_create(event_co, handleAccept, (void*)(size_t)sockfd.get_fd());
     schedule();
     
-
     return 0;
 }

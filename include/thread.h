@@ -10,7 +10,6 @@
 #include <string.h>
 #include <time.h>
 #include <list>
-
 #include <errno.h>
 
 
@@ -43,12 +42,13 @@ typedef struct co_struct
 } co_struct;
 
 //调用栈结构，保存被调方与调用方的链接关系
-typedef struct co_env
+typedef struct co_dispatch_centor
 {
      co_struct* call_stack[128];
      int index;
      Epoll_event ev_manger;
-}co_env;
+}co_dispatch_centor;
+
 
 
 struct cmp_time
@@ -61,7 +61,7 @@ struct cmp_time
 };
 
 //调用栈关系
-extern co_env  env;
+extern co_dispatch_centor  co_centor;
 
 //用于保存所有协程
 extern std::deque<co_struct*> co_deques;
