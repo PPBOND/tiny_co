@@ -34,7 +34,7 @@ void co_sleep(int sleep_time)
 }
 
 
-void co_wake()
+void wake_sleeping_co()
 {
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
@@ -134,34 +134,25 @@ void schedule()
     
     while(1)
     {
-        
-        co_wake();
+        wake_sleeping_co();
         ready_co_to_queue();
         if(!work_deques.empty())
-            goto resume;
-    
+            goto ready_co_run;
+
         if(work_deques.empty() && time_queue.empty() && wait_list.empty())
         {
             LOG_DEBUG("work_deues.empty, schedule finish");
             return;
         }
 
-
         env.ev_manger.wait_event();
-        env.ev_manger.wake_event();
-        
+        env.ev_manger.wake_event();        
         ready_co_to_queue();
-        
-        if(!work_deques.empty())
-            goto resume;
-        if(work_deques.empty() && (!time_queue.empty() || !wait_list.empty()) )
+        if(work_deques.empty())
             continue;
-        else if(work_deques.empty() && time_queue.empty() && wait_list.empty())
-            return;
-        
-    
- resume:
-        co_struct * next_co = work_deques.front();
+
+ready_co_run:
+        co_struct* next_co = work_deques.front();
         work_deques.pop_front(); 
 
         LOG_DEBUG("next_co= %d", next_co->co_id);
@@ -242,11 +233,11 @@ void co_releae(co_struct* co)
 void ev_register_to_manager(int fd, int event,int ops)
 {
     LOG_DEBUG("ev_register_to_manager fd =%d, event=%d, ops=%d",fd, event, ops );
-    co_struct* now = get_current();
-    now->ev.init_event(fd, event, ops);
-    env.ev_manger.updateEvent(&now->ev);
-    now->status = Status::WAITING;
-    wait_list.push_back(now);
+    co_struct* current_co = get_current();
+    current_co->ev.init_event(fd, event, ops);
+    env.ev_manger.updateEvent(&current_co->ev);
+    current_co->status = Status::WAITING;
+    wait_list.push_back(current_co);
     co_yield();
 }
 
@@ -254,7 +245,7 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 {
    
     int sockfd = -1;
-    ev_register_to_manager(fd,EPOLLIN, EPOLL_CTL_ADD);
+    ev_register_to_manager(fd, EPOLLIN, EPOLL_CTL_ADD);
     sockfd = accept(fd, addr, len);
 	exit_if(sockfd < 0, "accept failed");
     return sockfd;

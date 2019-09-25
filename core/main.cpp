@@ -44,7 +44,7 @@ int main()
     ListenSocket sockfd;
     sockfd.create(9898,"0.0.0.0");
     LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
-    co_create(event_co, handleAccept, (void*)(size_t)sockfd.fd);
+    co_create(event_co, handleAccept, (void*)(size_t)sockfd.get_fd());
     schedule();
     
 
