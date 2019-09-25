@@ -26,6 +26,7 @@ typedef void (*Fun)(void* arg);
 //协程结构体
 typedef struct co_struct
 {
+    Event ev;
     void* arg = NULL;
     Fun fun = NULL;
     unsigned int co_id;
@@ -33,7 +34,12 @@ typedef struct co_struct
     bool is_end = false; 
     char stack[Default_size];
     Status status = Status::INIT;
-    Event ev;
+    struct timeval tv;
+    int get_time_with_usec() const
+    {
+        return tv.tv_sec*1000000 + tv.tv_usec;
+    }
+    
 } co_struct;
 
 //调用栈结构，保存被调方与调用方的链接关系
@@ -44,19 +50,10 @@ typedef struct co_env
      Epoll_event ev_manger;
 }co_env;
 
-typedef struct time_co
-{
-    co_struct * co;
-    struct timeval tv;
-    int get_time_with_usec() const
-    {
-        return tv.tv_sec*1000000 + tv.tv_usec;
-    }
-}time_co;
 
 struct cmp_time
 {
-    bool operator()(time_co* &lhs, time_co* &rhs)
+    bool operator()(co_struct* &lhs, co_struct* &rhs)
     {
         return lhs->get_time_with_usec() > rhs->get_time_with_usec();
     }
@@ -76,7 +73,7 @@ extern std::deque<co_struct*> work_deques;
 extern co_struct co_main;
 
 //协程休眠存放的
-extern std::priority_queue<time_co*, std::vector<time_co*>, cmp_time> time_queue;
+extern std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
 extern std::list<co_struct *> wait_list;

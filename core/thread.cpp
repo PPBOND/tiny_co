@@ -15,19 +15,19 @@ std::deque<co_struct*> work_deques;
 co_struct co_main;
 
 //协程休眠存放的链表
-std::priority_queue<time_co*, std::vector<time_co*>, cmp_time> time_queue;
+std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
 std::list<co_struct *> wait_list;
 
 void co_sleep(int sleep_time)
 {
-    time_co t_co;   
-    t_co.co = get_current();
-    gettimeofday(&t_co.tv,NULL);
-    t_co.tv.tv_sec += sleep_time;
-    t_co.co->status = Status::SLEEPING;
-    time_queue.push(&t_co);
+      
+    co_struct* current_co = get_current();
+    gettimeofday(&current_co->tv,NULL);
+    current_co->tv.tv_sec += sleep_time;
+    current_co->status = Status::SLEEPING;
+    time_queue.push(&current_co);
     co_yield();
 
     LOG_DEBUG("co_sleep end");
@@ -41,7 +41,7 @@ void wake_sleeping_co()
 
     while(!time_queue.empty())
     {
-        time_co * top_co = time_queue.top();
+        co_struct * top_co = time_queue.top();
         int diff_time = top_co->get_time_with_usec() - (tv.tv_sec*1000000 + tv.tv_usec);
         LOG_DEBUG("diff_time =%d",diff_time);
         if(diff_time < 0)
