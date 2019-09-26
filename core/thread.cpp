@@ -259,7 +259,7 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 
 
 
-int co_recv(int fd, void *buf, size_t len) {
+int co_read(int fd, void *buf, size_t len) {
 	
 	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP,EPOLL_CTL_ADD);
 	int ret = read(fd, buf, len);
@@ -269,4 +269,26 @@ int co_recv(int fd, void *buf, size_t len) {
 	}
 
 	return ret;
+}
+
+int  co_write(int fd, void* buf, size_t len)
+{
+    int sent = 0;
+
+	int ret = write(fd, ((char*)buf)+sent, len-sent);
+	if (ret == 0) return ret;
+	if (ret >  0) sent += ret;
+
+	while (sent < len) {
+        ev_register_to_manager(fd, EPOLLOUT | EPOLLHUP,EPOLL_CTL_ADD);
+		ret = write(fd, ((char*)buf)+sent, len-sent);
+		if (ret <= 0) {			
+			break;
+		}
+		sent += ret;
+	}
+
+	if (ret <= 0 && sent == 0) return ret;
+	
+	return sent;
 }
