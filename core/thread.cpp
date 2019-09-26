@@ -6,15 +6,14 @@ using namespace std;
 
 
 //协程调度中心
- co_dispatch_centor  co_centor;
+co_dispatch_centor  co_centor;
 
-//UUID
-static int uuid =0;
-
-static int get_uuid() { return ++uuid; }
+//Todo UUID
+static int generator_uuid =0;
+static int get_uuid() { return ++generator_uuid; }
 
 //用于保存所有协程
-std::deque<co_struct*> co_deques;
+std::deque<co_struct*> total_co_deques;
 
 //准备就绪的协程跟正在运行的协程
 std::deque<co_struct*> work_deques;
@@ -32,12 +31,13 @@ void co_sleep(int sleep_time)
 {
       
     co_struct* current_co = get_current();
+    current_co->status    = Status::SLEEPING;
+
     gettimeofday(&current_co->tv,NULL);
     current_co->tv.tv_sec += sleep_time;
-    current_co->status = Status::SLEEPING;
     time_queue.push(current_co);
+    
     co_yield();
-
     LOG_DEBUG("co_sleep end");
 }
 
@@ -116,7 +116,7 @@ int co_create(co_struct* &co, Fun func, void *arg)
     co->context.uc_link = NULL;
 
     makecontext(&co->context, (void (*)())co_func, 1, co);  
-    co_deques.push_back(co);
+    total_co_deques.push_back(co);
 
     return 0;
 }
@@ -126,7 +126,7 @@ void ready_co_to_queue()
     if(!work_deques.empty())
         return;
     
-    for(auto& co: co_deques)
+    for(auto& co: total_co_deques)
     {
         if(co->status == Status::READY)
         {
@@ -180,7 +180,7 @@ ready_co_run:
 void  co_yield()
 {
     co_struct * current  = co_centor.call_stack[co_centor.index -1];
-    co_struct * prev    = co_centor.call_stack[co_centor.index -2];
+    co_struct * prev     = co_centor.call_stack[co_centor.index -2];
     LOG_DEBUG("will runing=%d", prev->co_id);
     co_centor.index--;
 
@@ -221,19 +221,19 @@ void co_releae(co_struct* release_co)
     if(release_co->status != Status::EXIT)
         return;
 
-    for(auto iter = co_deques.begin(); iter != co_deques.end();)
+    for(auto iter = total_co_deques.begin(); iter != total_co_deques.end();)
     {
         if(*iter == release_co)
         {
             LOG_DEBUG("co_id=%d release", release_co->co_id);
-            iter = co_deques.erase(iter);
+            iter = total_co_deques.erase(iter);
             delete release_co;
         }
         else
             iter++;
     }
 
-    LOG_DEBUG("co_deques.size=%d", co_deques.size());
+    LOG_DEBUG("total_co_deques.size=%d", total_co_deques.size());
 }
 
 
@@ -251,27 +251,22 @@ void ev_register_to_manager(int fd, int event,int ops)
 
 int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 {
-   
-    int sockfd = -1;
     ev_register_to_manager(fd, EPOLLIN, EPOLL_CTL_ADD);
-    sockfd = accept(fd, addr, len);
+    int sockfd = accept(fd, addr, len);
 	exit_if(sockfd < 0, "accept failed");
     return sockfd;
 }
 
 
 
-ssize_t co_recv(int fd, void *buf, size_t len) {
+int co_recv(int fd, void *buf, size_t len) {
 	
-
 	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP,EPOLL_CTL_ADD);
-
 	int ret = read(fd, buf, len);
-	if (ret < 0) {
-		//if (errno == EAGAIN) return ret;
+	if (ret < 0) 
+    {
 		if (errno == ECONNRESET) return -1;
-		//printf("recv error : %d, ret : %d\n", errno, ret);
-		
 	}
+
 	return ret;
 }

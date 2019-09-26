@@ -15,40 +15,42 @@
 
 
 
- 
-enum class Status {INIT=1, READY, RUNNING, SLEEPING, WAITING, EXIT};
-typedef void (*Fun)(void* arg);
+//event类将会用到此声明.
 #define Default_size 8096
+enum class Status {INIT=1, READY, RUNNING, SLEEPING, WAITING, EXIT};
+using  Fun = void(*)(void* arg);
+
 
 
 
 //协程结构体
-typedef struct co_struct
+struct co_struct
 {
     Event ev;
-    void* arg = NULL;
-    Fun fun = NULL;
-    unsigned int co_id;
-    ucontext_t   context; 
-    bool is_end = false; 
-    char stack[Default_size];
-    Status status = Status::INIT;
     struct timeval tv;
+    unsigned int   co_id;
+    ucontext_t     context;
+    char stack[Default_size];
+
+    Fun fun       = NULL;
+    void* arg     = NULL;
+    bool is_end   = false; 
+    Status status = Status::INIT;
+    
     int get_time_with_usec() const
     {
         return tv.tv_sec*1000000 + tv.tv_usec;
     }
     
-} co_struct;
+};
 
 //调用栈结构，保存被调方与调用方的链接关系
-typedef struct co_dispatch_centor
+struct co_dispatch_centor
 {
-     co_struct* call_stack[128];
-     int index;
-     Epoll_event ev_manger;
-}co_dispatch_centor;
-
+    int index;
+    Epoll_event ev_manger;
+    co_struct*  call_stack[128];
+};
 
 
 struct cmp_time
@@ -60,27 +62,13 @@ struct cmp_time
 
 };
 
-//调用栈关系
-extern co_dispatch_centor  co_centor;
 
-//用于保存所有协程
-extern std::deque<co_struct*> co_deques;
 
-//准备就绪的协程跟正在运行的协程
-extern std::deque<co_struct*> work_deques;
-
-//主进程上下文,主要用来保存切换的上下文
-extern co_struct co_main;
-
-//协程休眠存放的
-extern std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
-
-//协程等待时需要用到,唤醒则在epoll_wait后.
+/*
+以下为全局链表跟队列声明，event类需要用到,定义在thread.cpp中
+*/
 extern std::list<co_struct *> wait_list;
-
-
-
-
+extern std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
 
 void co_init();
 void co_yield();
@@ -93,8 +81,8 @@ co_struct* get_current();
 
 void ev_register_to_manager(co_struct * co);
 int  co_create(co_struct* &co, Fun func, void *arg);
-ssize_t co_recv(int fd, void *buf, size_t len);
-int co_accept(int fd ,struct sockaddr* addr, socklen_t *len);
+int  co_recv(int fd, void *buf, size_t len);
+int  co_accept(int fd ,struct sockaddr* addr, socklen_t *len);
 
 
 
