@@ -19,6 +19,12 @@ void ListenSocket::create(int port, const char *ip)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = inet_addr(ip);
+    
+    int val =1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val))<0) {
+        perror("setsockopt()");         
+    }    
+
     int ret = bind(fd, (struct sockaddr *) &addr, sizeof(struct sockaddr));
     ret = listen(fd, 20);
     printf("listenfd=%d", fd);

@@ -12,15 +12,9 @@
 #include <list>
 #include <errno.h>
 
-
-
-
-//event类将会用到此声明.
 #define Default_size 8096
 enum class Status {INIT=1, READY, RUNNING, SLEEPING, WAITING, EXIT};
 using  Fun = void(*)(void* arg);
-
-
 
 
 //协程结构体
@@ -82,7 +76,7 @@ co_struct* get_current();
 void ev_register_to_manager(co_struct * co);
 int  co_create(co_struct* &co, Fun func, void *arg);
 int  co_read(int fd, void* buf, size_t len);
-int  co_write(int fd, void* buf, size_t len);
+int  co_write(int fd, char* buf, size_t len);
 int  co_accept(int fd ,struct sockaddr* addr, socklen_t *len);
 
 

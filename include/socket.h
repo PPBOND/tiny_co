@@ -18,7 +18,6 @@ public:
     Socket(){}
   
     void setnonblock();
-
     int fd;
    
 };

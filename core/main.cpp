@@ -1,7 +1,11 @@
 #include "socket.h"
 #include "thread.h"
 #include "event.h"
-#include <string>
+#include<string>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+
 static Event listen_ev;
 using namespace std;
 
@@ -12,6 +16,10 @@ void handleRead(void *rhs)
     LOG_DEBUG("handle read \n");
     char buf[1024];
     co_read(fd, buf,1024);
+    std::string httpRes;
+    httpRes = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 6\r\n\r\n123456";
+    co_write(fd,httpRes.c_str(),httpRes.size());
+    
     close(fd);
     LOG_DEBUG("recv_buf=%s\n",buf);
     
@@ -37,9 +45,8 @@ void handleAccept(void * rhs)
 
 }
 
-
-int main()
-{   
+void child_process()
+{
     co_init();
     co_struct *listen_co;
     ListenSocket sockfd;
@@ -47,6 +54,25 @@ int main()
     LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
     co_create(listen_co, handleAccept, (void*)(size_t)sockfd.get_fd());
     schedule();
+}
+
+
+
+int main()
+{   
+    int i=0;
+    for(i =0; i<8; ++i)
+    {
+        pid_t pid = fork();
+        if( pid == 0)
+            child_process();
+        if(pid < 0)
+        {
+            printf("create child process error\n");
+            exit(-1);
+        }
+    }
+     while (wait(NULL) != 0);
     
-    return 0;
+    
 }

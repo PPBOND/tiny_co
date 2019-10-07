@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#define _DEBUG_
+#define _DEBUG
 #ifdef  _DEBUG_
 
 #define LOG_DEBUG(fmt,...) \

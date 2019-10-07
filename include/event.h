@@ -37,10 +37,8 @@ public:
     void wake_event();
     int  get_min_time();
 
-
-
     int  maxevent;
-    int  timeout;  //取决于协程最小睡眠时间，
+    int  timeout;  //取决于协程最小睡眠时间，否则默认为5秒
     int  epoll_fd;
     int  active_num;
     struct epoll_event active_ev[100];
