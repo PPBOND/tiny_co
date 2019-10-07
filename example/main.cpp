@@ -21,6 +21,7 @@ void bad_request(int client)
     sprintf(buf, "<P>Your browser sent a bad request, ");
     send(client, buf, sizeof(buf), 0);
     sprintf(buf, "such as a POST without a Content-Length.\r\n");
+    
     send(client, buf, sizeof(buf), 0);
 }
 
