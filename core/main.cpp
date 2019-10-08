@@ -10,7 +10,7 @@ static Event listen_ev;
 using namespace std;
 
 
-void handleRead(void *rhs)
+void handleTask(void *rhs)
 {
     int fd = reinterpret_cast<long>(rhs);
     LOG_DEBUG("handle read \n");
@@ -38,7 +38,7 @@ void handleAccept(void * rhs)
         socklen_t rsz = sizeof(raddr);
         int cfd = co_accept(fd, (struct sockaddr *) &raddr, &rsz);
         exit_if(cfd < 0, "accept failed");
-        co_create(read_co, handleRead, (void*)(size_t)cfd);
+        co_create(read_co, handleTask, (void*)(size_t)cfd);
         LOG_DEBUG("read_co=%d", read_co->co_id);
     }
 
