@@ -9,7 +9,6 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
-#include <unistd.h>
 #include "comm_tools.h"
 
 class Socket

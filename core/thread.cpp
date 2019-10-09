@@ -1,5 +1,5 @@
 #include "thread.h"
-#include <unistd.h>
+
 
 using namespace std;
 
@@ -259,29 +259,35 @@ int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
 
 
 
-int co_read(int fd, void *buf, size_t len) {
+extern "C" ssize_t read(int fd, void *buf, size_t count) {
 	
+    printf("call my read\n");
+    LOG_DEBUG("call my read");
 	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP ,EPOLL_CTL_ADD);
-	int ret = read(fd, buf, len);
+	int ret = 0;
+    /*
+    int ret = read(fd, buf, len);
 	if (ret < 0) 
     {
 		if (errno == ECONNRESET) return -1;
 	}
-
+    */
 	return ret;
 }
 
-int  co_write(int fd, char* buf, size_t len)
+int  co_write(int fd, const char* buf, size_t len)
 {
     int sent = 0;
 
-	int ret = write(fd, ((char*)buf)+sent, len-sent);
+	int ret ;
+    //= write(fd, (buf)+sent, len-sent);
 	if (ret == 0) return ret;
 	if (ret >  0) sent += ret;
 
 	while (sent < len) {
         ev_register_to_manager(fd, EPOLLOUT | EPOLLHUP,EPOLL_CTL_ADD);
-		ret = write(fd, ((char*)buf)+sent, len-sent);
+		ret ;
+        // write(fd, (buf)+sent, len-sent);
 		if (ret <= 0) {			
 			break;
 		}

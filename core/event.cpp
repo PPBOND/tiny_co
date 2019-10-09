@@ -7,6 +7,7 @@
     epoll_ev.events  = events; 
     epoll_ev.data.fd = sock_fd;
     this->ops  = ops;
+    return 0;
  }
 
 

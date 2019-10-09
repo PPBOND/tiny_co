@@ -1,9 +1,8 @@
 #pragma once
 #include <errno.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
-#define _DEBUG
+#define _DEBUG_
 #ifdef  _DEBUG_
 
 #define LOG_DEBUG(fmt,...) \

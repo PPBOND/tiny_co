@@ -2,6 +2,7 @@
 #include "thread.h"
 #include "event.h"
 #include<string>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -15,7 +16,7 @@ void handleTask(void *rhs)
     int fd = reinterpret_cast<long>(rhs);
     LOG_DEBUG("handle read \n");
     char buf[1024];
-    co_read(fd, buf,1024);
+    read(fd, buf,1024);
     std::string httpRes;
     httpRes = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 6\r\n\r\n123456";
     co_write(fd,httpRes.c_str(),httpRes.size());
