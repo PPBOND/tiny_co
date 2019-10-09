@@ -1,5 +1,6 @@
 #include "event.h"
 #include "thread.h"
+#include <sys/socket.h>
 
 
  int Event::init_event(int sock_fd , int events, int ops)
@@ -15,7 +16,8 @@
 int Epoll_event::updateEvent( Event * ev)
 {
     LOG_DEBUG("ev->epoll_ev.data.fd =%d", ev->epoll_ev.data.fd);
-    epoll_ctl(epoll_fd, ev->ops , ev->epoll_ev.data.fd, &ev->epoll_ev);
+    int ret= epoll_ctl(epoll_fd, ev->ops , ev->epoll_ev.data.fd, &ev->epoll_ev);
+    LOG_DEBUG("-----------------------------------------ret=%d",ret);
     return 0;
 }
 
@@ -44,7 +46,11 @@ void Epoll_event::wake_event()
 {
     for(int i = 0; i< this->active_num; ++i)
     {
+       
         int active_fd = active_ev[i].data.fd;
+        Event ev;
+        ev.init_event(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
+        updateEvent(&ev);
         LOG_DEBUG("active_fd = %d \n", active_fd);
 
         for(auto list_node = wait_list.begin(); list_node != wait_list.end();)

@@ -19,7 +19,7 @@ void handleTask(void *rhs)
     read(fd, buf,1024);
     std::string httpRes;
     httpRes = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 6\r\n\r\n123456";
-    co_write(fd,httpRes.c_str(),httpRes.size());
+    write(fd,httpRes.c_str(),httpRes.size());
     
     close(fd);
     LOG_DEBUG("recv_buf=%s\n",buf);
@@ -37,7 +37,7 @@ void handleAccept(void * rhs)
         co_struct* read_co;
         struct sockaddr_in raddr;
         socklen_t rsz = sizeof(raddr);
-        int cfd = co_accept(fd, (struct sockaddr *) &raddr, &rsz);
+        int cfd = accept(fd, (struct sockaddr *) &raddr, &rsz);
         exit_if(cfd < 0, "accept failed");
         co_create(read_co, handleTask, (void*)(size_t)cfd);
         LOG_DEBUG("read_co=%d", read_co->co_id);
@@ -62,7 +62,7 @@ void child_process()
 int main()
 {   
     int i=0;
-    for(i =0; i<8; ++i)
+    for(i =0; i<1; ++i)
     {
         pid_t pid = fork();
         if( pid == 0)

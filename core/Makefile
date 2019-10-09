@@ -7,16 +7,15 @@ LIBPATH  = ./libs/
 
 vpath %.h ./inc
 
-OBJS     = event.o socket.o thread.o
-SRCS     = event.cpp  socket.cpp thread.cpp 
-
-
+OBJS     = event.o socket.o thread.o   hook_sys_call.o
+SRCS     = event.cpp  socket.cpp thread.cpp  hook_sys_call.cpp
+EXEC     = main
 
 
 all:$(OBJS)
 	$(CC) -shared -fPIC -o $(TARGET) $(OBJS)    -std=c++11
 	mv $(TARGET) $(LIBPATH)
-	$(CC) -o main main.cpp -L$(LIBPATH) -lzywco  $(INCLUDE)  -Wl,--rpath=$(LIBPATH)  -std=c++11
+	$(CC) -o $(EXEC) main.cpp -L$(LIBPATH) -lzywco  -ldl -D_GNU_SOURCE $(INCLUDE)  -Wl,--rpath=$(LIBPATH)  -std=c++11
 
 $(OBJS):$(SRCS)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $^  -std=c++11
@@ -24,7 +23,7 @@ $(OBJS):$(SRCS)
 
 
 clean:
-	rm -f *.o
+	rm -f *.o $(EXEC)
 	rm -f $(LIBPATH)*
 
 

@@ -1,5 +1,5 @@
 #include "socket.h"
-
+#include <sys/socket.h>
 
 
 void Socket::setnonblock()

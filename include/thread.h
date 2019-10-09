@@ -73,11 +73,7 @@ void co_releae(co_struct* co);
 void ready_co_to_queue();
 co_struct* get_current();
 
-void ev_register_to_manager(co_struct * co);
+void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
-int  co_write(int fd, const char* buf, size_t len);
-int  co_accept(int fd ,struct sockaddr* addr, socklen_t *len);
-
-
 
 

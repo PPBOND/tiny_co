@@ -1,6 +1,7 @@
 #include "thread.h"
 
 
+
 using namespace std;
 
 
@@ -249,52 +250,3 @@ void ev_register_to_manager(int fd, int event,int ops)
     co_yield();
 }
 
-int co_accept(int fd ,struct sockaddr* addr, socklen_t *len)
-{
-    ev_register_to_manager(fd, EPOLLIN, EPOLL_CTL_ADD);
-    int sockfd = accept(fd, addr, len);
-	exit_if(sockfd < 0, "accept failed");
-    return sockfd;
-}
-
-
-
-extern "C" ssize_t read(int fd, void *buf, size_t count) {
-	
-    printf("call my read\n");
-    LOG_DEBUG("call my read");
-	ev_register_to_manager(fd, EPOLLIN | EPOLLHUP ,EPOLL_CTL_ADD);
-	int ret = 0;
-    /*
-    int ret = read(fd, buf, len);
-	if (ret < 0) 
-    {
-		if (errno == ECONNRESET) return -1;
-	}
-    */
-	return ret;
-}
-
-int  co_write(int fd, const char* buf, size_t len)
-{
-    int sent = 0;
-
-	int ret ;
-    //= write(fd, (buf)+sent, len-sent);
-	if (ret == 0) return ret;
-	if (ret >  0) sent += ret;
-
-	while (sent < len) {
-        ev_register_to_manager(fd, EPOLLOUT | EPOLLHUP,EPOLL_CTL_ADD);
-		ret ;
-        // write(fd, (buf)+sent, len-sent);
-		if (ret <= 0) {			
-			break;
-		}
-		sent += ret;
-	}
-
-	if (ret <= 0 && sent == 0) return ret;
-	
-	return sent;
-}
