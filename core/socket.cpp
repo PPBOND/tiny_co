@@ -25,11 +25,9 @@ void ListenSocket::create(int port, const char *ip)
         perror("setsockopt()");         
     }    
 
-    int ret = bind(fd, (struct sockaddr *) &addr, sizeof(struct sockaddr));
-    ret = listen(fd, 20);
+    bind(fd, (struct sockaddr *) &addr, sizeof(struct sockaddr));
+    listen(fd, 20);
     printf("listenfd=%d", fd);
     setnonblock();
-
-
 
 }

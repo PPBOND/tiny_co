@@ -67,12 +67,11 @@ extern std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_q
 void co_init();
 void co_yield();
 void schedule();
-void co_resume(co_struct* co);
-void co_sleep(int sleep_time);
-void co_releae(co_struct* co);
 void ready_co_to_queue();
-co_struct* get_current();
+void co_resume(co_struct* co);
+void co_releae(co_struct* co);
 
+co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
 

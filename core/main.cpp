@@ -29,7 +29,6 @@ void handleTask(void *rhs)
 
 void handleAccept(void * rhs) 
 {
-    
     int fd = reinterpret_cast<long>(rhs);
     LOG_DEBUG("listen_fd=%d", fd);
     while(1)

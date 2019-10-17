@@ -17,7 +17,7 @@
 class Event
 {
 public:
-    int init_event(int sockfd , int events, int ops);
+    int alter_status(int sockfd , int events, int ops);
     int get_fd() { return epoll_ev.data.fd; }
     int get_event() { return  epoll_ev.events;}
     

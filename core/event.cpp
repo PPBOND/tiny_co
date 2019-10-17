@@ -3,14 +3,13 @@
 #include <sys/socket.h>
 
 
- int Event::init_event(int sock_fd , int events, int ops)
+ int Event::alter_status(int sock_fd , int events, int ops)
  {
     epoll_ev.events  = events; 
     epoll_ev.data.fd = sock_fd;
     this->ops  = ops;
     return 0;
  }
-
 
 
 int Epoll_event::updateEvent( Event * ev)
@@ -48,9 +47,6 @@ void Epoll_event::wake_event()
     {
        
         int active_fd = active_ev[i].data.fd;
-        Event ev;
-        ev.init_event(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
-        updateEvent(&ev);
         LOG_DEBUG("active_fd = %d \n", active_fd);
 
         for(auto list_node = wait_list.begin(); list_node != wait_list.end();)
@@ -61,6 +57,8 @@ void Epoll_event::wake_event()
             if(event_fd == active_fd)
             {
                 (*list_node)->status = Status::READY;
+                (*list_node)->ev.alter_status(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
+                updateEvent(&(*list_node)->ev);
                 list_node = wait_list.erase(list_node);
                 break;
             }

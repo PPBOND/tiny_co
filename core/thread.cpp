@@ -28,19 +28,6 @@ std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
 //协程等待时需要用到,唤醒则在epoll_wait后.
 std::list<co_struct *> wait_list;
 
-void co_sleep(int sleep_time)
-{
-      
-    co_struct* current_co = get_current();
-    current_co->status    = Status::SLEEPING;
-
-    gettimeofday(&current_co->tv,NULL);
-    current_co->tv.tv_sec += sleep_time;
-    time_queue.push(current_co);
-    
-    co_yield();
-    LOG_DEBUG("co_sleep end");
-}
 
 
 void wake_sleeping_co()
@@ -133,7 +120,7 @@ void ready_co_to_queue()
         {
             LOG_DEBUG("co->id=%d",co->co_id);
             work_deques.push_back(co);
-            LOG_DEBUG("work.size()=%d", work_deques.size());
+            LOG_DEBUG("work.size()=%zu", work_deques.size());
         }
     }
 }
@@ -234,7 +221,7 @@ void co_releae(co_struct* release_co)
             iter++;
     }
 
-    LOG_DEBUG("total_co_deques.size=%d", total_co_deques.size());
+    LOG_DEBUG("total_co_deques.size=%ld", total_co_deques.size());
 }
 
 
@@ -243,7 +230,7 @@ void ev_register_to_manager(int fd, int event,int ops)
 {
     LOG_DEBUG("ev_register_to_manager fd =%d, event=%d, ops=%d",fd, event, ops );
     co_struct* current_co = get_current();
-    current_co->ev.init_event(fd, event, ops);
+    current_co->ev.alter_status(fd, event, ops);
     co_centor.ev_manger.updateEvent(&current_co->ev);
     current_co->status = Status::WAITING;
     wait_list.push_back(current_co);
