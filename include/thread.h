@@ -29,6 +29,7 @@ struct co_struct
     Fun fun       = NULL;
     void* arg     = NULL;
     bool is_end   = false; 
+    bool is_timeout = false;
     Status status = Status::INIT;
     
     int get_time_with_usec() const
@@ -75,5 +76,24 @@ co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
 int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
+
+
+
+template<class T>
+void remove_elem_from_queue(T& queue, co_struct * current_co)
+{
+    for(auto iter = queue.begin(); iter != queue.end();)
+    {
+        if(*iter == current_co)
+        {
+                LOG_DEBUG("co_id=%d release", current_co->co_id);
+                iter = queue.erase(iter);        
+        }    
+        else
+            iter++;
+    
+    }
+    
+}
 
 
