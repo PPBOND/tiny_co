@@ -109,6 +109,19 @@ int co_create(co_struct* &co, Fun func, void *arg)
     return 0;
 }
 
+
+
+
+int co_timer(co_struct* &co, Fun func, void *arg,unsigned int time)
+{
+    co_create(co, func,arg);
+    gettimeofday(&co->tv,NULL);
+    co->tv.tv_sec += time;
+    co->status     = Status::SLEEPING;
+    time_queue.push(co);
+    return 0;
+
+}
 void ready_co_to_queue()
 {
     if(!work_deques.empty())

@@ -74,5 +74,6 @@ void co_releae(co_struct* co);
 co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
+int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
 
 

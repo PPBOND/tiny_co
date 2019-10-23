@@ -7,8 +7,8 @@ LIBPATH  = ./libs/
 
 vpath %.h ./inc
 
-OBJS     = event.o socket.o thread.o   hook_sys_call.o
-SRCS     = event.cpp  socket.cpp thread.cpp  hook_sys_call.cpp
+OBJS     = event.o socket.o thread.o   hook_sys_call.o co_cond.o
+SRCS     = event.cpp  socket.cpp thread.cpp  hook_sys_call.cpp co_cond.cpp
 EXEC     = main
 
 
