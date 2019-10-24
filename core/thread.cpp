@@ -1,10 +1,5 @@
 #include "thread.h"
-
-
-
 using namespace std;
-
-
 
 //协程调度中心
 co_dispatch_centor  co_centor;
@@ -23,7 +18,7 @@ std::deque<co_struct*> work_deques;
 co_struct co_main;
 
 //协程休眠存放的链表
-std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
+min_heap<co_struct*, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
 std::list<co_struct *> wait_list;

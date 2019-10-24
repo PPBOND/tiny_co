@@ -31,9 +31,13 @@ void  Consumer(void *arg)
     while(1)
     {
 
-        if(product == 0)
-            cond.cond_wait();
-        product--;
+        if(product <= 0)
+	{
+           int ret= cond.cond_time_wait(1);
+	   if(ret == -1)
+	    LOG_DEBUG("timeout```````````````");
+	}
+	product--;
         LOG_DEBUG("Consumer  product::%d\n",product);
     }
 }
@@ -47,7 +51,7 @@ int main()
     co_struct *co_consume2;
     co_struct *co_product;
     co_create(co_consume1, Consumer, NULL);
-    co_create(co_consume2, Consumer, NULL);
+    //co_create(co_consume2, Consumer, NULL);
     co_create(co_product, Producer, NULL);
     schedule();
 

@@ -63,7 +63,7 @@ struct cmp_time
 以下为全局链表跟队列声明，event类需要用到,定义在thread.cpp中
 */
 extern std::list<co_struct *> wait_list;
-extern std::priority_queue<co_struct*, std::vector<co_struct*>, cmp_time> time_queue;
+extern min_heap<co_struct*, cmp_time> time_queue;
 
 void co_init();
 void co_yield();
