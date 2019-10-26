@@ -35,12 +35,10 @@ void wake_sleeping_co()
         co_struct * top_co = time_queue.top();
         int diff_time = top_co->get_time_with_usec() - (tv.tv_sec*1000000 + tv.tv_usec);
         LOG_DEBUG("diff_time =%d",diff_time);
-        if(diff_time < 0)
-        {
+        if(diff_time < 0){
             time_queue.pop();
             top_co->status = Status::READY;
             work_deques.push_back(top_co);
-            
         }
         else
             return ;
@@ -238,9 +236,9 @@ void ev_register_to_manager(int fd, int event,int ops)
 {
     LOG_DEBUG("ev_register_to_manager fd =%d, event=%d, ops=%d",fd, event, ops );
     co_struct* current_co = get_current();
+    current_co->status    = Status::WAITING;
     current_co->ev.alter_status(fd, event, ops);
     co_centor.ev_manger.updateEvent(&current_co->ev);
-    current_co->status = Status::WAITING;
     wait_list.push_back(current_co);
     co_yield();
 }

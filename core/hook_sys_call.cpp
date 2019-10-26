@@ -44,7 +44,7 @@ extern "C" ssize_t read(int fd, void *buf, size_t count) {
 extern "C" int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
     LOG_DEBUG("call hook accept !!!!!!!");
-    ev_register_to_manager(sockfd, EPOLLIN, EPOLL_CTL_ADD);
+	ev_register_to_manager(sockfd, EPOLLIN, EPOLL_CTL_ADD);
     int fd = g_sys_accept_func(sockfd, addr, addrlen);
     exit_if(fd < 0, "accept failed");
     return fd;
@@ -103,7 +103,7 @@ ssize_t sendto(int socket, const void *message, size_t length,
 	ssize_t ret = g_sys_sendto_func( socket,message,length,flags,dest_addr,dest_len );
 	if( ret < 0 && EAGAIN == errno )
 	{
-        ev_register_to_manager(socket, EPOLLOUT ,EPOLL_CTL_ADD);
+        ev_register_to_manager( socket, EPOLLOUT ,EPOLL_CTL_ADD);
 		ret = g_sys_sendto_func( socket,message,length,flags,dest_addr,dest_len );
 
 	}

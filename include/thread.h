@@ -13,7 +13,7 @@
 #include <errno.h>
 
 #define Default_size 8096
-enum class Status {INIT=1, READY, RUNNING, SLEEPING, WAITING, EXIT};
+enum class Status {INIT = 1, READY, RUNNING, SLEEPING, WAITING, EXIT};
 using  Fun = void(*)(void* arg);
 
 
@@ -26,11 +26,11 @@ struct co_struct
     ucontext_t     context;
     char stack[Default_size];
 
-    Fun fun       = NULL;
-    void* arg     = NULL;
-    bool is_end   = false; 
+    Fun fun         = NULL;
+    void* arg       = NULL;
+    bool is_end     = false; 
     bool is_timeout = false;
-    Status status = Status::INIT;
+    Status status  = Status::INIT;
     
     int get_time_with_usec() const
     {
@@ -79,8 +79,8 @@ int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
 
 
 
-template<class T>
-void remove_elem_from_queue(T& queue, co_struct * current_co)
+template<class T, class Q>
+void remove_elem_from_queue(T& queue, Q& current_co)
 {
     for(auto iter = queue.begin(); iter != queue.end();)
     {

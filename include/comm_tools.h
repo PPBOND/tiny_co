@@ -37,17 +37,19 @@ printf("[DEBUG co_id=%d:%s:%d:%s] " fmt"\n",get_current()->co_id,__FILE__, __LIN
 template<typename T,typename Q>
 class min_heap : public std::priority_queue<T, std::vector<T>,Q>
 {
-  public:
 
-      bool remove(const T& value) {
+public:
+    bool remove(const T& value)
+    {
         auto it = std::find(this->c.begin(), this->c.end(), value);
-        if (it != this->c.end()) {
+        if (it != this->c.end()) 
+        {
             this->c.erase(it);
             std::make_heap(this->c.begin(), this->c.end(), this->comp);
             return true;
-       }
-       else {
-        return false;
-       }
- }
+        }
+        else 
+            return false;
+       
+    }
 };
