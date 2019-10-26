@@ -76,12 +76,12 @@ int Epoll_event::get_min_time()
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
 
-    if(time_queue.empty())
+    if(co_centor.time_manager.empty())
         return 5000;
 
-    auto top_co = time_queue.top();
-    LOG_DEBUG("top_co->co_id=%d", top_co->co_id);
-    int time_diff = (top_co->tv.tv_sec - tv.tv_sec)*1000 + (top_co->tv.tv_usec - tv.tv_usec)/1000;
+    struct timeval  mix_time = co_centor.time_manager.get_mix_time();
+    int time_diff = (mix_time.tv_sec - tv.tv_sec)*1000 + (mix_time.tv_usec - tv.tv_usec)/1000;
+    LOG_DEBUG("time_diff =%d", time_diff);
     return time_diff > 0 ? time_diff : 0; 
 
 }

@@ -7,52 +7,33 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-co_cond_t cond;
 
-static int product =0;
 
-void  Producer(void *arg)
+void fuck_test(void *data)
 {
-    while(1)
-    {
-        product ++;
-        product ++;
-        product ++;
-        LOG_DEBUG("Producer  product::%d\n",product);
-        cond.cond_wake_once();
-        sleep(1);
-    }
+    printf("%s\n",(char*)data);
 
 }
-
 
 void  Consumer(void *arg)
 {
-    while(1)
-    {
+    char * test ="fuck_test";
+    auto k =AddTimer(fuck_test,test,2,1);
+    sleep(11);
+  //  DelTimer(k);
 
-        if(product <= 0)
-	{
-           int ret= cond.cond_time_wait(1);
-	   if(ret == -1)
-	    LOG_DEBUG("timeout```````````````");
-	}
-	product--;
-        LOG_DEBUG("Consumer  product::%d\n",product);
-    }
 }
-
-
 
 int main()
 {
+
+
     co_init();
-    co_struct *co_consume1;
-    co_struct *co_consume2;
     co_struct *co_product;
-    co_create(co_consume1, Consumer, NULL);
-    //co_create(co_consume2, Consumer, NULL);
-    co_create(co_product, Producer, NULL);
+    co_create(co_product, Consumer, NULL);
+    
+  
+    
     schedule();
 
 

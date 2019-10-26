@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "timer.h"
 #include <list>
 #include <errno.h>
 
@@ -21,22 +22,13 @@ using  Fun = void(*)(void* arg);
 struct co_struct
 {
     Event ev;
-    struct timeval tv;
     unsigned int   co_id;
     ucontext_t     context;
     char stack[Default_size];
-
     Fun fun         = NULL;
     void* arg       = NULL;
     bool is_end     = false; 
-    bool is_timeout = false;
     Status status  = Status::INIT;
-    
-    int get_time_with_usec() const
-    {
-        return tv.tv_sec*1000000 + tv.tv_usec;
-    }
-    
 };
 
 //调用栈结构，保存被调方与调用方的链接关系
@@ -44,18 +36,11 @@ struct co_dispatch_centor
 {
     int index;
     Epoll_event ev_manger;
+    CTimerManager time_manager;
     co_struct*  call_stack[128];
 };
 
 
-struct cmp_time
-{
-    bool operator()(co_struct* &lhs, co_struct* &rhs)
-    {
-        return lhs->get_time_with_usec() > rhs->get_time_with_usec();
-    }
-
-};
 
 
 
@@ -63,15 +48,14 @@ struct cmp_time
 以下为全局链表跟队列声明，event类需要用到,定义在thread.cpp中
 */
 extern std::list<co_struct *> wait_list;
-extern min_heap<co_struct*, cmp_time> time_queue;
-
+extern co_dispatch_centor  co_centor;
 void co_init();
 void co_yield();
 void schedule();
 void ready_co_to_queue();
 void co_resume(co_struct* co);
 void co_releae(co_struct* co);
-
+void wake_sleep_co (void *co);
 co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
@@ -97,3 +81,6 @@ void remove_elem_from_queue(T& queue, Q& current_co)
 }
 
 
+TimerElem * AddTimer(FuncPtrOnTimeout expired_func, void *data,
+                                   uint64_t expired_ms, int flag);
+int DelTimer(TimerElem *timer_elem);

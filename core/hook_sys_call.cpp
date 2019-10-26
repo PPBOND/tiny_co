@@ -64,10 +64,7 @@ extern "C" unsigned int sleep(unsigned int seconds)
 	LOG_DEBUG("sleep begin");
 	co_struct* current_co = get_current();
     current_co->status    = Status::SLEEPING;
-
-    gettimeofday(&current_co->tv,NULL);
-    current_co->tv.tv_sec += seconds;
-    time_queue.push(current_co);
+	co_centor.time_manager.AddTimer(wake_sleep_co,current_co, seconds, 0);
     co_yield();
     LOG_DEBUG("sleep end");
 	return 0;

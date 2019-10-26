@@ -17,34 +17,11 @@ std::deque<co_struct*> work_deques;
 //主进程上下文,主要用来保存切换的上下文
 co_struct co_main;
 
-//协程休眠存放的链表
-min_heap<co_struct*, cmp_time> time_queue;
 
 //协程等待时需要用到,唤醒则在epoll_wait后.
 std::list<co_struct *> wait_list;
 
 
-
-void wake_sleeping_co()
-{
-    struct timeval  tv;
-    gettimeofday(&tv,NULL);   
-
-    while(!time_queue.empty())
-    {
-        co_struct * top_co = time_queue.top();
-        int diff_time = top_co->get_time_with_usec() - (tv.tv_sec*1000000 + tv.tv_usec);
-        LOG_DEBUG("diff_time =%d",diff_time);
-        if(diff_time < 0){
-            time_queue.pop();
-            top_co->status = Status::READY;
-            work_deques.push_back(top_co);
-        }
-        else
-            return ;
-    }
-
-}
 
 
 
@@ -105,16 +82,7 @@ int co_create(co_struct* &co, Fun func, void *arg)
 
 
 
-int co_timer(co_struct* &co, Fun func, void *arg,unsigned int time)
-{
-    co_create(co, func,arg);
-    gettimeofday(&co->tv,NULL);
-    co->tv.tv_sec += time;
-    co->status     = Status::SLEEPING;
-    time_queue.push(co);
-    return 0;
 
-}
 void ready_co_to_queue()
 {
     if(!work_deques.empty())
@@ -136,12 +104,12 @@ void schedule()
     
     while(1)
     {
-        wake_sleeping_co();
+        co_centor.time_manager.CheckExpire();
         ready_co_to_queue();
         if(!work_deques.empty())
             goto ready_co_run;
 
-        if(work_deques.empty() && time_queue.empty() && wait_list.empty())
+        if(work_deques.empty() && co_centor.time_manager.empty() && wait_list.empty())
         {
             LOG_DEBUG("work_deues.empty, schedule finish");
             return;
@@ -243,3 +211,23 @@ void ev_register_to_manager(int fd, int event,int ops)
     co_yield();
 }
 
+
+
+void wake_sleep_co(void *co)
+{
+    co_struct* wake_co = (co_struct*) co;
+    wake_co->status = Status::READY;
+    co_resume(wake_co);
+}
+
+
+TimerElem * AddTimer(FuncPtrOnTimeout expired_func, void *data,
+                                   uint64_t expired_ms, int flag)
+{
+    return co_centor.time_manager.AddTimer(expired_func,data,expired_ms, flag);
+
+}
+int DelTimer(TimerElem *timer_elem)
+{
+    return co_centor.time_manager.DelTimer(timer_elem);
+}

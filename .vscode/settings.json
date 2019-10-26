@@ -52,5 +52,6 @@
         "ratio": "cpp",
         "unordered_map": "cpp",
         "xhash": "cpp"
-    }
+    },
+    "debug.console.fontSize": 18
 }

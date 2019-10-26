@@ -41,8 +41,8 @@ public:
   FuncPtrOnTimeout expired_func_; // 超时后执行的函数
   void *data_;                    //expired_func_的参数
   uint64_t expired_ms_;           // 绝对的超时时间,单位ms
-  int heap_idx_;                  //用来删除定时器
-};
+  
+  };
 
 struct cmp_time
 {
