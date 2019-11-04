@@ -17,7 +17,6 @@ std::deque<co_struct*> work_deques;
 //主进程上下文,主要用来保存切换的上下文
 co_struct co_main;
 
-
 //协程等待时需要用到,唤醒则在epoll_wait后.
 std::list<co_struct *> wait_list;
 
@@ -173,7 +172,6 @@ void co_resume(co_struct* ready_co)
     prev->status      = Status::READY;
     swapcontext(&prev->context, &ready_co->context);
     prev->status      = Status::RUNNING;
-   
 }
 
 
@@ -221,13 +219,13 @@ void wake_sleep_co(void *co)
 }
 
 
-TimerElem * AddTimer(FuncPtrOnTimeout expired_func, void *data,
+TimerElem * addtimer(FuncPtrOnTimeout expired_func, void *data,
                                    uint64_t expired_ms, int flag)
 {
     return co_centor.time_manager.AddTimer(expired_func,data,expired_ms, flag);
 
 }
-int DelTimer(TimerElem *timer_elem)
+int deltimer(TimerElem *timer_elem)
 {
     return co_centor.time_manager.DelTimer(timer_elem);
 }

@@ -30,7 +30,4 @@ public:
     int  get_fd() { return fd;}
     void create(int port, const char *ip);
     struct sockaddr_in addr;
-
-
-     
 };

@@ -18,7 +18,7 @@ void fuck_test(void *data)
 void  Consumer(void *arg)
 {
     char * test ="fuck_test";
-    auto k =AddTimer(fuck_test,test,2,1);
+    auto k =addtimer(fuck_test,test,2,1);
     sleep(11);
   //  DelTimer(k);
 

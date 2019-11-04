@@ -62,25 +62,6 @@ int  co_create(co_struct* &co, Fun func, void *arg);
 int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
 
 
-
-template<class T, class Q>
-void remove_elem_from_queue(T& queue, Q& current_co)
-{
-    for(auto iter = queue.begin(); iter != queue.end();)
-    {
-        if(*iter == current_co)
-        {
-                LOG_DEBUG("co_id=%d release", current_co->co_id);
-                iter = queue.erase(iter);        
-        }    
-        else
-            iter++;
-    
-    }
-    
-}
-
-
-TimerElem * AddTimer(FuncPtrOnTimeout expired_func, void *data,
+TimerElem * addtimer(FuncPtrOnTimeout expired_func, void *data,
                                    uint64_t expired_ms, int flag);
-int DelTimer(TimerElem *timer_elem);
+int deltimer(TimerElem *timer_elem);

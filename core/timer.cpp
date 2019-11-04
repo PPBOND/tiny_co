@@ -21,7 +21,7 @@ TimerElem *CTimerManager::AddTimer(FuncPtrOnTimeout expired_func, void *data,
 int CTimerManager::DelTimer(TimerElem *timer_elem)
 {
     if (timer_elem == NULL)
-    {
+    { 
         return -1;
     }
     min_heap.remove(timer_elem);
@@ -40,8 +40,9 @@ void CTimerManager::CheckExpire()
         gettimeofday(&tv, NULL);
 
         struct timeval min_tv = get_mix_time();
-        long long timeout_flag = (min_tv.tv_sec - tv.tv_sec) * 1000 + (min_tv.tv_usec - tv.tv_usec) / 1000;
         TimerElem *top_elem = min_heap.top();
+        long long timeout_flag = (min_tv.tv_sec - tv.tv_sec) * 1000 + (min_tv.tv_usec - tv.tv_usec) / 1000;
+       
         if (timeout_flag < 0)
         {
             LOG_DEBUG("timeout need exec\n");

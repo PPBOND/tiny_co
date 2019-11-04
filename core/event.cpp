@@ -3,13 +3,13 @@
 #include <sys/socket.h>
 
 
- int Event::alter_status(int sock_fd , int events, int ops)
- {
+int Event::alter_status(int sock_fd , int events, int ops)
+{
     epoll_ev.events  = events; 
     epoll_ev.data.fd = sock_fd;
     this->ops  = ops;
     return 0;
- }
+}
 
 
 int Epoll_event::updateEvent( Event * ev)
@@ -26,7 +26,6 @@ int Epoll_event::create(int maxev, int time_out)
    maxevent = maxev;
    timeout  = time_out;
    epoll_fd = epoll_create(1);
-   
    return 0;
 }
 
@@ -62,7 +61,6 @@ void Epoll_event::wake_event()
                 list_node = wait_list.erase(list_node);
                 break;
             }
-
             ++ list_node;
         }
     }

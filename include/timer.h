@@ -22,7 +22,6 @@ public:
         }
         else 
             return false;
-       
     }
 };
 
@@ -51,15 +50,16 @@ struct cmp_time
 };
 
 
-class CTimerManager {
+class CTimerManager 
+{
 public:
     TimerElem *AddTimer(FuncPtrOnTimeout expired_func, void *data,
                       uint64_t expired_ms, int flag);                  
-    int DelTimer(TimerElem *timer_elem);       
+    int  DelTimer(TimerElem *timer_elem);       
     void CheckExpire();
     struct timeval get_mix_time();
     int  size();
-    bool empty();
+    bool empty();    
     
 private:
     heap<TimerElem*,cmp_time>  min_heap;
