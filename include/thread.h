@@ -18,6 +18,8 @@ enum class Status {INIT = 1, READY, RUNNING, SLEEPING, WAITING, EXIT};
 using  Fun = void(*)(void* arg);
 
 
+extern int swapcontext(ucontext_t *, ucontext_t *) asm("swapcontext");
+extern int getcontext(ucontext_t *) asm("getcontext");
 //协程结构体
 struct co_struct
 {

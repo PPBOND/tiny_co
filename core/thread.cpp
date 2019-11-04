@@ -25,8 +25,6 @@ std::list<co_struct *> wait_list;
 
 
 
-extern int swapcontext(ucontext_t *, ucontext_t *) asm("swapcontext");
-
 
 co_struct* get_current()
 {
