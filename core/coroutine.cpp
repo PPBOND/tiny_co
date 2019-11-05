@@ -53,7 +53,7 @@ void co_init()
 
 
 
-int co_create(co_struct* &co, Fun func, void *arg)
+int  co_create(co_struct* &co, Fun func, void *arg, bool isjoin)
 {
     
     co = new co_struct;
@@ -61,6 +61,7 @@ int co_create(co_struct* &co, Fun func, void *arg)
     co->arg    = arg;
     co->fun    = func;
     co->co_id  = get_uuid();
+    co->is_joinable = isjoin;
     co->status = Status::READY;
     co->context.uc_stack.ss_sp    = co->stack;
     co->context.uc_stack.ss_size  = Default_size;
@@ -122,7 +123,7 @@ ready_co_run:
         LOG_DEBUG("next_co= %d", next_co->co_id);
         co_resume(next_co);
 
-        if(next_co->status == Status::EXIT)
+        if(next_co->status == Status::EXIT && next_co->is_joinable != true)
             co_releae(next_co);
 
         LOG_DEBUG("schedule end ");
@@ -156,12 +157,17 @@ int co_join(co_struct* &co, void** retval)
 {
     co_struct * current = get_current();
     if(co == current )  return 0;
+    if(co->is_joinable == false)
+        return -1;
 
     while(co->status != Status::EXIT)
         co_yield();
     
-    if(retval != nullptr)  *retval = co->exit_ret;
+    if(retval != nullptr)  
+        *retval = co->exit_ret;
     
+    co_releae(co);
+
     return 0;
 }
 

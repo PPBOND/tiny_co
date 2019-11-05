@@ -27,10 +27,11 @@ struct co_struct
     unsigned int   co_id;
     ucontext_t     context;
     char stack[Default_size];
-    Fun fun          = NULL;
-    void* arg        = NULL;
-    void* exit_ret   = NULL;
-    bool  is_end     = false; 
+    Fun fun           = NULL;
+    void* arg         = NULL;
+    void* exit_ret    = NULL;
+    bool  is_end      = false; 
+    bool  is_joinable = false;
     Status status    = Status::INIT;
 
 };
@@ -62,7 +63,7 @@ void co_releae(co_struct* co);
 void wake_sleep_co (void *co);
 co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
-int  co_create(co_struct* &co, Fun func, void *arg);
+int  co_create(co_struct* &co, Fun func, void *arg, bool isjoin );
 int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
 int  co_join(co_struct* &co, void** retval);
 
