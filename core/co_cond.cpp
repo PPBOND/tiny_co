@@ -27,12 +27,6 @@ void co_cond_t::cond_wake_all()
     }
 }
 
-void wake_cond_co(void *co)
-{
-    co_struct *current_co = (co_struct *)co;
-    current_co->status    = Status::READY;
-    co_resume(current_co);
-}
 
 int co_cond_t::cond_time_wait(int time)
 {
