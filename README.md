@@ -5,13 +5,6 @@
 * 优化上下文切换与上下文获取(去除不需要的浮点数保存以及信号掩码系统调用)
 * 基于最小堆与epoll实现毫秒精度的定时器
 * 基于符号覆盖原则实现hook部分函数:
-read
-write
-send
-recv 
-sendto
-recvfrom
-accept
-sleep
+read  write  send  recv  sendto  recvfrom  accept sleep
 * 支持协程间的join,wait等同步手段.
 
