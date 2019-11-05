@@ -1,6 +1,6 @@
 #pragma once
 #include <deque>
-#include "thread.h"
+#include "coroutine.h"
 class co_cond_t
 {
 public:

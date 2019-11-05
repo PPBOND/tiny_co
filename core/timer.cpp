@@ -1,6 +1,6 @@
 #include "timer.h"
 #include "comm_tools.h"
-#include "thread.h"
+#include "coroutine.h"
 
 TimerElem *CTimerManager::AddTimer(FuncPtrOnTimeout expired_func, void *data,
                                    uint64_t expired_ms, int flag)
