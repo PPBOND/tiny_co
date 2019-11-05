@@ -6,5 +6,5 @@
 * 基于最小堆与epoll实现毫秒精度的定时器
 * 基于符号覆盖原则实现hook部分函数:
 read  write  send  recv  sendto  recvfrom  accept sleep
-* 支持协程间的join,wait等同步手段.
+* 支持协程间的join,suspend,wait等同步手段.
 
