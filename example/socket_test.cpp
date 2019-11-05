@@ -1,5 +1,5 @@
 #include "socket.h"
-#include "thread.h"
+#include "coroutine.h"
 #include "event.h"
 #include <string>
 static Epoll_event  ep_ev;
@@ -71,7 +71,7 @@ void handleAccept(void * rhs)
     sock.fd = cfd;
     sock.setnonblock();
     Event   ev;
-    ev.init_event(&sock, EPOLLIN, EPOLL_CTL_ADD);
+    ev.alter_status(sock.fd, EPOLLIN, EPOLL_CTL_ADD);
     ep_ev.updateEvent(&ev);
 
     sockaddr_in peer, local;
@@ -138,7 +138,7 @@ int main()
     ListenSocket sockfd;
     sockfd.create(9898,"0.0.0.0");
     ep_ev.create(20, 10000);
-    listen_ev.init_event(&sockfd, EPOLLIN, EPOLL_CTL_ADD);
+    listen_ev.alter_status(sockfd.get_fd(), EPOLLIN, EPOLL_CTL_ADD);
     ep_ev.updateEvent(&listen_ev);
     loop_run();
     

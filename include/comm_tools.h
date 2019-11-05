@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <queue>
-#define _aDEBUG_
+#define _DaEBUG_
 #ifdef  _DEBUG_
 
 #define LOG_DEBUG(fmt,...) \
@@ -33,18 +33,3 @@ printf("[DEBUG co_id=%d:%s:%d:%s] " fmt"\n",get_current()->co_id,__FILE__, __LIN
     }
 
 
-template<class T, class Q>
-void remove_elem_from_queue(T& queue, Q& current_co)
-{
-    for(auto iter = queue.begin(); iter != queue.end();)
-    {
-        if(*iter == current_co)
-        {
-            LOG_DEBUG("co_id=%d release", current_co->co_id);
-            iter = queue.erase(iter);        
-        }    
-        else
-            iter++;
-    }
-    
-}

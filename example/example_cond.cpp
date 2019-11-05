@@ -20,7 +20,7 @@ void  Producer(void *arg)
         product ++;
         LOG_DEBUG("Producer  product::%d\n",product);
         cond.cond_wake_once();
-        sleep(1);
+        sleep(5);
     }
 
 }

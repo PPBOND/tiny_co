@@ -4,7 +4,7 @@ void co_cond_t::cond_wait()
 {
     co_struct *current = get_current();
     current->status    = Status::WAITING;
-    wait_queue.push_front(current);
+    wait_queue.push_back(current);
     co_yield();
 }
 
@@ -39,7 +39,7 @@ int co_cond_t::cond_time_wait(int time)
     TimerElem *cond_time;
     co_struct *current_co = get_current();
     current_co->status    = Status::SLEEPING;
-    wait_queue.push_front(current_co);
+    wait_queue.push_back(current_co);
     cond_time = co_centor.time_manager.AddTimer(wake_sleep_co, current_co, time, 0);
     co_yield();
 
