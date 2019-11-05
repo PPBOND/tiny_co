@@ -34,8 +34,7 @@ co_struct* get_current()
 
 void co_func(co_struct* co)
 {
-    if(co->fun)
-    {
+    if(co->fun){
         Fun process = co->fun;
         process(co->arg);
     }
@@ -156,6 +155,16 @@ void  co_yield()
     swapcontext(&current->context, &prev->context);
     current->status = Status::RUNNING;
 
+}
+
+
+void co_join(co_struct* &co)
+{
+    co_struct * current = get_current();
+    if(co == current )  return;
+
+    while(co->status != Status::EXIT)
+        co_yield();
 }
 
 

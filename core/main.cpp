@@ -11,45 +11,26 @@ co_cond_t cond;
 
 static int product =0;
 
+void  test_fuck(void *arg)
+{
+    printf("test_fuck has been call\n");
+    sleep(10);
+}
+
 void  Producer(void *arg)
-{
-    while(1)
-    {
-        product ++;
-        product ++;
-        product ++;
-        printf("Producer  product::%d\n",product);
-        cond.cond_wake_once();
-        sleep(5);
-    }
-
+{   
+    printf("wait test_fuck begin\n");
+    co_struct *co_product;
+    co_create(co_product, test_fuck, NULL);
+    co_join(co_product);
+    printf("wait_test_fuck end \n");
 }
-
-
-void  Consumer(void *arg)
-{
-    while(1)
-    {
-
-        if(product == 0)
-            cond.cond_wait();
-        product--;
-        printf("%s  product::%d\n",(char*)arg, product);
-    }
-}
-
 
 
 int main()
 {
-    char *test1 ="consume1";
-    char *test2 = "consume2";
-    co_init();
-    co_struct *co_consume1;
-    co_struct *co_consume2;
+    co_init();  
     co_struct *co_product;
-    co_create(co_consume1, Consumer, test1);
-    co_create(co_consume2, Consumer, test2);
     co_create(co_product, Producer, NULL);
     schedule();
 

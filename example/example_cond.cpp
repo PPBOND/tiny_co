@@ -1,5 +1,5 @@
 #include "socket.h"
-#include "thread.h"
+#include "coroutine.h"
 #include "event.h"
 #include "co_cond.h"
 #include<string>
@@ -18,7 +18,7 @@ void  Producer(void *arg)
         product ++;
         product ++;
         product ++;
-        LOG_DEBUG("Producer  product::%d\n",product);
+        printf("Producer  product::%d\n",product);
         cond.cond_wake_once();
         sleep(5);
     }
@@ -34,7 +34,7 @@ void  Consumer(void *arg)
         if(product == 0)
             cond.cond_wait();
         product--;
-        LOG_DEBUG("Consumer  product::%d\n",product);
+        printf("%s  product::%d\n",(char*)arg, product);
     }
 }
 
@@ -42,14 +42,15 @@ void  Consumer(void *arg)
 
 int main()
 {
+    char *test1 ="consume1";
+    char *test2 = "consume2";
     co_init();
     co_struct *co_consume1;
     co_struct *co_consume2;
     co_struct *co_product;
-    co_create(co_consume1, Consumer, NULL);
-    co_create(co_consume2, Consumer, NULL);
-    co_create(co_product, Producer, NULL);
+    co_create(co_consume1, Consumer, test1);
+  //  co_create(co_consume2, Consumer, test2);
+   // co_create(co_product, Producer, NULL);
     schedule();
-
 
 }
