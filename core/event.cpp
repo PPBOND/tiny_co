@@ -17,7 +17,7 @@ int Epoll_event::updateEvent( Event * ev)
     LOG_DEBUG("ev->epoll_ev.data.fd =%d", ev->epoll_ev.data.fd);
     int ret= epoll_ctl(epoll_fd, ev->ops , ev->epoll_ev.data.fd, &ev->epoll_ev);
     LOG_DEBUG("-----------------------------------------ret=%d",ret);
-    return 0;
+    return ret;
 }
 
 

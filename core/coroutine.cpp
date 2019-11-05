@@ -22,10 +22,6 @@ std::list<co_struct *> wait_list;
 
 
 
-
-
-
-
 co_struct* get_current()
 {
     return co_centor.call_stack[co_centor.index-1];
@@ -36,11 +32,9 @@ void co_func(co_struct* co)
 {
     if(co->fun){
         Fun process = co->fun;
-        process(co->arg);
+        co->exit_ret= process(co->arg);
     }
-
-    co_struct * current = co_centor.call_stack[co_centor.index-1];
-    current->is_end     = true;
+    co->is_end     = true;
     LOG_DEBUG("over");
     co_yield();
 }
@@ -158,13 +152,17 @@ void  co_yield()
 }
 
 
-void co_join(co_struct* &co)
+int co_join(co_struct* &co, void** retval)
 {
     co_struct * current = get_current();
-    if(co == current )  return;
+    if(co == current )  return 0;
 
     while(co->status != Status::EXIT)
         co_yield();
+    
+    if(retval != nullptr)  *retval = co->exit_ret;
+    
+    return 0;
 }
 
 
@@ -236,6 +234,7 @@ TimerElem * addtimer(FuncPtrOnTimeout expired_func, void *data,
     return co_centor.time_manager.AddTimer(expired_func,data,expired_ms, flag);
 
 }
+
 int deltimer(TimerElem *timer_elem)
 {
     return co_centor.time_manager.DelTimer(timer_elem);

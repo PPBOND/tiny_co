@@ -8,6 +8,10 @@
 #define _DaEBUG_
 #ifdef  _DEBUG_
 
+#DEFINE  CO_OK 0
+#define  CO_FAIL -1
+
+
 #define LOG_DEBUG(fmt,...) \
 printf("[DEBUG co_id=%d:%s:%d:%s] " fmt"\n",get_current()->co_id,__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
 #endif

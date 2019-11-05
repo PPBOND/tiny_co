@@ -15,7 +15,7 @@
 
 #define Default_size 8096
 enum class Status {INIT = 1, READY, RUNNING, SLEEPING, WAITING, EXIT};
-using  Fun = void(*)(void* arg);
+using  Fun = void* (*)(void* arg);
 
 
 extern int swapcontext(ucontext_t *, ucontext_t *) asm("swapcontext");
@@ -27,10 +27,12 @@ struct co_struct
     unsigned int   co_id;
     ucontext_t     context;
     char stack[Default_size];
-    Fun fun         = NULL;
-    void* arg       = NULL;
-    bool is_end     = false; 
-    Status status  = Status::INIT;
+    Fun fun          = NULL;
+    void* arg        = NULL;
+    void* exit_ret   = NULL;
+    bool  is_end     = false; 
+    Status status    = Status::INIT;
+
 };
 
 //调用栈结构，保存被调方与调用方的链接关系
@@ -62,13 +64,12 @@ co_struct* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(co_struct* &co, Fun func, void *arg);
 int  co_timer(co_struct* &co, Fun func, void *arg,unsigned int time);
-void co_join(co_struct* &co);
+int  co_join(co_struct* &co, void** retval);
 
 
 TimerElem * addtimer(FuncPtrOnTimeout expired_func, void *data,
                                    uint64_t expired_ms, int flag);
 int deltimer(TimerElem *timer_elem);
-
 
 
 template<class T, class Q>
