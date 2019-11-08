@@ -31,7 +31,6 @@ public:
 };
 
 using FuncPtrOnTimeout = void (*)(void *data);
-//typedef void (*FuncPtrOnTimeout)(void *data);
 
 
 struct TimerElem {
@@ -56,18 +55,16 @@ struct cmp_time
 };
 
 
-class CTimerManager 
+class Timer_Manager 
 {
 public:
-    TimerElem *AddTimer(FuncPtrOnTimeout expired_func, void *data,
+    TimerElem* addtimer(FuncPtrOnTimeout expired_func, void *data,
                       uint64_t expired_ms, int flag);                  
-    int  DelTimer(TimerElem *timer_elem);       
-    void CheckExpire();
+    int  deltimer(TimerElem *timer_elem);       
+    void checkexpire();
     struct timeval get_mix_time();
     int  size();
     bool empty();    
-    
-    
 private:
     Heap_Container <TimerElem*, cmp_time>  m_min_heap;
 };

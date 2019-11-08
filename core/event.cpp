@@ -48,18 +48,18 @@ void Epoll_event::wake_event()
         int active_fd = active_ev[i].data.fd;
         LOG_DEBUG("active_fd = %d \n", active_fd);
 
-        for(auto list_node = wait_list.begin(); list_node != wait_list.end();)
+        for(auto list_node =  sche_centor.wait_manager.begin(); list_node != sche_centor.wait_manager.end();)
         {
             int event_fd = (*list_node)->ev.get_fd();
             LOG_DEBUG("event_fd =%d \n", event_fd);
 
             if(event_fd == active_fd)
             {   
-                work_deques.push_back(*list_node);
-                (*list_node)->status = Status::READY;
+                sche_centor.ready_manager.push_back(*list_node);
+                (*list_node)->status = Status::ready;
                 (*list_node)->ev.alter_status(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
                 updateEvent(&(*list_node)->ev);
-                list_node = wait_list.erase(list_node);
+                list_node = sche_centor.wait_manager.erase(list_node);
                 
                 break;
             }
@@ -76,10 +76,10 @@ int Epoll_event::get_min_time()
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
 
-    if(co_centor.time_manager.empty())
+    if(sche_centor.time_manager.empty())
         return 5000;
 
-    struct timeval  mix_time = co_centor.time_manager.get_mix_time();
+    struct timeval  mix_time = sche_centor.time_manager.get_mix_time();
     int time_diff = (mix_time.tv_sec - tv.tv_sec)*1000 + (mix_time.tv_usec - tv.tv_usec)/1000;
     LOG_DEBUG("time_diff =%d", time_diff);
     return time_diff > 0 ? time_diff : 0; 

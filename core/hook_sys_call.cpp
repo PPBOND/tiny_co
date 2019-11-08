@@ -63,9 +63,9 @@ extern "C" ssize_t write(int fildes, const void *buf, size_t nbyte)
 extern "C" unsigned int sleep(unsigned int seconds)
 {
 	LOG_DEBUG("sleep begin");
-	co_struct* current_co = get_current();
-    current_co->status    = Status::SLEEPING;
-	co_centor.time_manager.AddTimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
+	CoRoutine_t* current_co = get_current();
+    current_co->status    = Status::sleeping;
+	sche_centor.time_manager.addtimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
     co_yield();
     LOG_DEBUG("sleep end");
 	return 0;

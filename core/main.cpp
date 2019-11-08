@@ -34,7 +34,7 @@ void* handleAccept(void * rhs)
     LOG_DEBUG("listen_fd=%d", fd);
     while(1)
     {   
-        co_struct* read_co;
+        CoRoutine_t* read_co;
         struct sockaddr_in raddr;
         socklen_t rsz = sizeof(raddr);
         int cfd = accept(fd, (struct sockaddr *) &raddr, &rsz);
@@ -51,12 +51,12 @@ void* handleAccept(void * rhs)
 void* child_process()
 {
     co_init();
-    co_struct *listen_co;
+    CoRoutine_t *listen_co;
     ListenSocket sockfd;
     sockfd.create(9898,"0.0.0.0");
     LOG_DEBUG("listen_fd=%d", sockfd.get_fd());
     co_create(listen_co, handleAccept, (void*)(size_t)sockfd.get_fd(),0);
-    schedule();
+    event_loop_run();
     return NULL;
 }
 
