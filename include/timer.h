@@ -7,7 +7,7 @@
 
 
 template<typename T,typename Q>
-class heap : public std::priority_queue<T, std::vector<T>,Q>
+class Heap_Container : public std::priority_queue<T, std::vector<T>,Q>
 {
 
 public:
@@ -61,8 +61,9 @@ public:
     int  size();
     bool empty();    
     
+    
 private:
-    heap<TimerElem*,cmp_time>  min_heap;
+    Heap_Container <TimerElem*, cmp_time>  m_min_heap;
 };
 
 

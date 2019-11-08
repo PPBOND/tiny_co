@@ -42,7 +42,7 @@ int co_cond_t::cond_time_wait(int time)
         remove_elem_from_queue(wait_queue, current_co);
         return -1;
     }
-
+    
     co_centor.time_manager.DelTimer(cond_time);
     return 0;
 }

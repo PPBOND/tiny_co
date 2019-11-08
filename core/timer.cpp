@@ -14,17 +14,16 @@ TimerElem *CTimerManager::AddTimer(FuncPtrOnTimeout expired_func, void *data,
     gettimeofday(&timer_elem->tv, NULL);
     timer_elem->tv.tv_sec += expired_ms;
     LOG_DEBUG("AddTimer= %d %d ", timer_elem->tv.tv_sec, timer_elem->tv.tv_usec);
-    min_heap.push(timer_elem);
+    m_min_heap.push(timer_elem);
     return timer_elem;
 }
 
 int CTimerManager::DelTimer(TimerElem *timer_elem)
 {
-    if (timer_elem == NULL)
-    { 
+    if (timer_elem == NULL) 
         return -1;
-    }
-    min_heap.remove(timer_elem);
+
+    m_min_heap.remove(timer_elem);
     delete timer_elem;
     timer_elem = NULL;
     return 0;
@@ -33,14 +32,14 @@ int CTimerManager::DelTimer(TimerElem *timer_elem)
 void CTimerManager::CheckExpire()
 {
 
-    LOG_DEBUG("min_heap.size=%d\n", min_heap.size());
-    while (min_heap.size() > 0)
+    LOG_DEBUG("min_heap.size=%d\n", m_min_heap.size());
+    while (m_min_heap.size() > 0)
     {
         struct timeval tv;
         gettimeofday(&tv, NULL);
 
         struct timeval min_tv = get_mix_time();
-        TimerElem *top_elem = min_heap.top();
+        TimerElem *top_elem = m_min_heap.top();
         long long timeout_flag = (min_tv.tv_sec - tv.tv_sec) * 1000 + (min_tv.tv_usec - tv.tv_usec) / 1000;
        
         if (timeout_flag < 0)
@@ -54,29 +53,29 @@ void CTimerManager::CheckExpire()
 
         if (top_elem->cycle_flag == 1)
         {
-            min_heap.pop();
+            m_min_heap.pop();
             top_elem->tv.tv_usec = tv.tv_usec;
             top_elem->tv.tv_sec = tv.tv_sec + top_elem->expired_ms_;
-            min_heap.push(top_elem);
+            m_min_heap.push(top_elem);
         }
         else
-            DelTimer(top_elem);
+            this->DelTimer(top_elem);
     }
     return;
 }
 
 struct timeval CTimerManager::get_mix_time()
 {
-    TimerElem *top_elem = min_heap.top();
+    TimerElem *top_elem = m_min_heap.top();
     return top_elem->tv;
 }
 
 int CTimerManager::size()
 {
-    return min_heap.size();
+    return m_min_heap.size();
 }
 
 bool CTimerManager::empty()
 {
-    return min_heap.size() == 0;
+    return m_min_heap.size() == 0;
 }

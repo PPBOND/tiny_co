@@ -6,8 +6,8 @@ using namespace std;
 int main()
 {
 
-	map<string,string> k;
-	if(k["5"].empty())
-	cout<<"is empty()"<<endl;
-	return 0;
+ string a="111";
+ string b="3333";
+ a +=b+"55555"+b;
+ cout<<a<<endl;
 }
