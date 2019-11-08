@@ -5,7 +5,6 @@
 #include <ucontext.h>
 #include <string.h>
 #include <queue>
-#include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -36,7 +35,7 @@ struct co_struct
 
 };
 
-//调用栈结构，保存被调方与调用方的链接关系
+//保存被调方与调用方的链接关系,管理event事件与超时事件.
 struct co_dispatch_centor
 {
     int index;

@@ -34,7 +34,7 @@ int co_cond_t::cond_time_wait(int time)
     co_struct *current_co = get_current();
     current_co->status    = Status::SLEEPING;
     wait_queue.push_back(current_co);
-    cond_time = co_centor.time_manager.AddTimer(wake_sleep_co, current_co, time, 0);
+    cond_time = co_centor.time_manager.AddTimer(wake_sleep_co, current_co, time, ONCE_EXEC);
     co_yield();
 
     if (cond_time->isexec)
@@ -42,7 +42,7 @@ int co_cond_t::cond_time_wait(int time)
         remove_elem_from_queue(wait_queue, current_co);
         return -1;
     }
-    
+
     co_centor.time_manager.DelTimer(cond_time);
     return 0;
 }
