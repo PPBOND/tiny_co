@@ -52,6 +52,7 @@ struct co_dispatch_centor
 以下为全局链表跟队列声明，event类需要用到,定义在thread.cpp中
 */
 extern std::list<co_struct *> wait_list;
+extern std::deque<co_struct*> work_deques;
 extern co_dispatch_centor  co_centor;
 void co_init();
 void co_yield();

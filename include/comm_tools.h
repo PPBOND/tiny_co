@@ -14,7 +14,7 @@
 #define CYCLE_EXEC 1
 
 
-#define _DaEBUG_
+#define _DEBUG_
 #ifdef  _DEBUG_
 #define LOG_DEBUG(fmt,...) \
 printf("[DEBUG co_id=%d:%s:%d:%s] " fmt"\n",get_current()->co_id,__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);

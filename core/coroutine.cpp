@@ -8,8 +8,6 @@ co_dispatch_centor  co_centor;
 static int generator_uuid =0;
 static int get_uuid() { return ++generator_uuid; }
 
-//用于保存所有协程
-std::deque<co_struct*> total_co_deques;
 
 //准备就绪的协程跟正在运行的协程
 std::deque<co_struct*> work_deques;
@@ -34,7 +32,7 @@ void co_func(co_struct* co)
         Fun process = co->fun;
         co->exit_ret= process(co->arg);
     }
-    co->is_end     = true;
+    co->is_end = true;
     LOG_DEBUG("over");
     co_yield();
 }
@@ -69,38 +67,22 @@ int  co_create(co_struct* &co, Fun func, void *arg, bool isjoin)
     co->context.uc_link = NULL;
 
     makecontext(&co->context, (void (*)())co_func, 1, co);  
-    total_co_deques.push_back(co);
+    work_deques.push_back(co);
 
     return 0;
 }
 
 
 
-
-
-void ready_co_to_queue()
-{
-    if(!work_deques.empty())
-        return;
-    
-    for(auto& co: total_co_deques)
-    {
-        if(co->status == Status::READY)
-        {
-            LOG_DEBUG("co->id=%d",co->co_id);
-            work_deques.push_back(co);
-            LOG_DEBUG("work.size()=%zu", work_deques.size());
-        }
-    }
-}
-
 void schedule()
 {
     
     while(1)
     {
+        /*sleep函数的实现:如果有睡眠协程,执行特定的事件:将修改睡眠协程状态为可执行状态,然后放入就绪队列
+          如果是普通事件,将执行定时事件
+        */
         co_centor.time_manager.CheckExpire();
-        ready_co_to_queue();
         if(!work_deques.empty())
             goto ready_co_run;
 
@@ -110,25 +92,40 @@ void schedule()
             return;
         }
 
+        /*
+        等待IO事件发生,如果发生了则根据fd找到对应的协程,接着再将协程状态改变为可执行状态,然后放入就绪队列.
+        等待时间则根据最小堆的top节点的时间进行等待,如果最小堆的节点为空,则默认为5秒.
+        */
         co_centor.ev_manger.wait_event();
         co_centor.ev_manger.wake_event();        
-        ready_co_to_queue();
         if(work_deques.empty())
             continue;
 
 ready_co_run:
-        co_struct* next_co = work_deques.front();
-        work_deques.pop_front(); 
+        /*
+            执行就绪事件,首先从就绪队列弹出一个协程执行,协程执行完或者被yield()并没执行完,再恢复到
+            主协程时做判断,如果没执行完主动yield则继续放入队列等待执行,如果执行完毕并不是joinable则释放资源(这里默认都是detach协程).
+            如果是joinable则需要自己调用co_join的处理.这里不做处理.
+        */
+        while(!work_deques.empty())
+        {
+            co_struct* next_co = work_deques.front();
+            work_deques.pop_front(); 
+            LOG_DEBUG("next_co= %d\n", next_co->co_id);
+            co_resume(next_co);
 
-        LOG_DEBUG("next_co= %d", next_co->co_id);
-        co_resume(next_co);
-
-        if(next_co->status == Status::EXIT && next_co->is_joinable != true)
-            co_releae(next_co);
-
-        LOG_DEBUG("schedule end ");
+	        LOG_DEBUG("co_status=%d\n",next_co->status ); 
+            if(next_co->status == Status::READY)
+                work_deques.push_back(next_co);     
+            else if(next_co->status == Status::EXIT && next_co->is_joinable != true)
+                co_releae(next_co);
+        }
+       
+       
 
     }
+    
+    LOG_DEBUG("schedule end ");
 
 }
 
@@ -143,8 +140,9 @@ void  co_yield()
 
     if(current->is_end == true)
         current->status = Status::EXIT;
-    else if(current->status == Status::RUNNING) 
+    else if(current->status == Status::RUNNING)
         current->status = Status::READY;
+       
 
     prev->status = Status::RUNNING;
     swapcontext(&current->context, &prev->context);
@@ -196,19 +194,9 @@ void co_releae(co_struct* release_co)
     if(release_co->status != Status::EXIT)
         return;
 
-    for(auto iter = total_co_deques.begin(); iter != total_co_deques.end();)
-    {
-        if(*iter == release_co)
-        {
-            LOG_DEBUG("co_id=%d release", release_co->co_id);
-            iter = total_co_deques.erase(iter);
-            delete release_co;
-        }
-        else
-            iter++;
-    }
-
-    LOG_DEBUG("total_co_deques.size=%ld", total_co_deques.size());
+    printf("co_id=%d release\n", release_co->co_id);
+    delete release_co;
+      
 }
 
 
@@ -230,7 +218,7 @@ void wake_sleep_co(void *co)
 {
     co_struct* wake_co = (co_struct*) co;
     wake_co->status = Status::READY;
-    co_resume(wake_co);
+    work_deques.push_back(wake_co);
 }
 
 

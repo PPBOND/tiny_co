@@ -30,7 +30,7 @@ void handleTask(void *rhs)
 void handleAccept(void * rhs) 
 {
     int fd = reinterpret_cast<long>(rhs);
-    LOG_DEBUG("listen_fd=%d", fd);
+    LOG_DEBUG("listen_fd=%d\n", fd);
     while(1)
     {   
         co_struct* read_co;

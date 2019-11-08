@@ -54,11 +54,13 @@ void Epoll_event::wake_event()
             LOG_DEBUG("event_fd =%d \n", event_fd);
 
             if(event_fd == active_fd)
-            {
+            {   
+                work_deques.push_back(*list_node);
                 (*list_node)->status = Status::READY;
                 (*list_node)->ev.alter_status(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
                 updateEvent(&(*list_node)->ev);
                 list_node = wait_list.erase(list_node);
+                
                 break;
             }
             ++ list_node;

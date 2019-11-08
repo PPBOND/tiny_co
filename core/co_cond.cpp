@@ -14,6 +14,7 @@ void co_cond_t::cond_wake_once()
         co_yield();
     co_struct *need_wake_co = wait_queue.front();
     need_wake_co->status    = Status::READY;
+    work_deques.push_back(need_wake_co);
     wait_queue.pop_front();
 }
 
@@ -24,6 +25,7 @@ void co_cond_t::cond_wake_all()
         co_struct *need_wake_co = wait_queue.front();
         need_wake_co->status    = Status::READY;
         wait_queue.pop_front();
+        work_deques.push_back(need_wake_co);
     }
 }
 
