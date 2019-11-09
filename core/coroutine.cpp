@@ -111,7 +111,6 @@ void  co_yield()
 {
     CoRoutine_t * current  = sche_centor.call_stack[sche_centor.chain_index -1];
     CoRoutine_t * prev     = sche_centor.call_stack[sche_centor.chain_index -2];
-    //LOG_DEBUG("will runing=%d", prev->routine_id);
     sche_centor.chain_index--;
 
     if(current->is_end == true)    current->status = Status::exit;
@@ -167,7 +166,7 @@ void co_releae(CoRoutine_t* release_co)
     if(release_co->status != Status::exit)
         return;
 
-    printf("co_id=%d release\n", release_co->routine_id);
+    LOG_DEBUG("co_id=%d release\n", release_co->routine_id);
     delete release_co;     
 }
 
@@ -175,7 +174,6 @@ void co_releae(CoRoutine_t* release_co)
 
 void ev_register_to_manager(int fd, int event,int ops)
 {
-    LOG_DEBUG("ev_register_to_manager fd =%d, event=%d, ops=%d",fd, event, ops );
     CoRoutine_t* current_co = get_current();
     current_co->status    = Status::waiting;
     current_co->ev.alter_status(fd, event, ops);

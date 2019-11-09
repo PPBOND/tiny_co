@@ -35,8 +35,7 @@ static sleep_pfn_t g_sys_sleep_func       = (sleep_pfn_t)dlsym(RTLD_NEXT,"sleep"
 
 
 extern "C" ssize_t read(int fd, void *buf, size_t count)
-{
-	LOG_DEBUG("call hook read !!!!!!!");
+{	
 	ev_register_to_manager(fd, EPOLLIN ,EPOLL_CTL_ADD);
     int ret = g_sys_read_func(fd, buf, count);
 	return ret;
