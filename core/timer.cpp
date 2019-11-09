@@ -32,7 +32,7 @@ int Timer_Manager::deltimer(TimerElem *timer_elem)
 void Timer_Manager::checkexpire()
 {
 
-    LOG_DEBUG("min_heap.size=%d\n", m_min_heap.size());
+    LOG_DEBUG("min_heap.size=%d", m_min_heap.size());
     while (m_min_heap.size() > 0)
     {
         struct timeval tv;

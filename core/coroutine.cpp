@@ -88,11 +88,11 @@ ready_co_run:
         {
             CoRoutine_t* ready_co = ready_manager.front();
             ready_manager.pop_front(); 
-            LOG_DEBUG("ready_co= %d\n", ready_co->routine_id);
+            LOG_DEBUG("ready_co= %d", ready_co->routine_id);
 
             co_resume(ready_co);
 
-	        LOG_DEBUG("co_status=%d\n",ready_co->status); 
+	        LOG_DEBUG("co_status=%d",ready_co->status); 
 
             if(ready_co->status == Status::ready)
             {
@@ -111,7 +111,7 @@ void  co_yield()
 {
     CoRoutine_t * current  = sche_centor.call_stack[sche_centor.chain_index -1];
     CoRoutine_t * prev     = sche_centor.call_stack[sche_centor.chain_index -2];
-    LOG_DEBUG("will runing=%d", prev->co_id);
+    //LOG_DEBUG("will runing=%d", prev->routine_id);
     sche_centor.chain_index--;
 
     if(current->is_end == true)    current->status = Status::exit;

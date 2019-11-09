@@ -53,10 +53,31 @@ extern "C" int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 extern "C" ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
-    LOG_DEBUG("call hook write  %s!!!!!!! fd=%d", (const char *)buf,fildes );
-    ev_register_to_manager(fildes, EPOLLOUT ,EPOLL_CTL_ADD);
-	int ret = g_sys_write_func(fildes, buf, nbyte);
-	return ret;
+	size_t wrotelen =0;
+	int retlen = g_sys_write_func(fildes, buf+ wrotelen, nbyte -wrotelen );
+	if(retlen == 0)
+		return  retlen;
+	
+	if(retlen >0)
+	{
+		wrotelen += retlen;
+	}
+
+	while(wrotelen < nbyte)
+	{
+
+		ev_register_to_manager(fildes, EPOLLOUT, EPOLL_CTL_ADD);
+		retlen = g_sys_write_func(fildes, buf+ wrotelen, nbyte -wrotelen );
+		
+		if(retlen <=0)
+			break;
+		
+		wrotelen += retlen;	
+	}
+
+	if(retlen<=0 &&wrotelen ==0 )
+		return retlen;
+	return wrotelen;
 
 }
 

@@ -40,7 +40,7 @@ void* handleAccept(void * rhs)
         int cfd = accept(fd, (struct sockaddr *) &raddr, &rsz);
         exit_if(cfd < 0, "accept failed");
         co_create(read_co, handleTask, (void*)(size_t)cfd,0);
-        LOG_DEBUG("read_co=%d", read_co->co_id);
+        LOG_DEBUG("read_co=%d", read_co->routine_id);
     } 
     
     return NULL;
@@ -64,19 +64,6 @@ void* child_process()
 
 int main()
 {   
-    int i=0;
-    for(i =0; i<1; ++i)
-    {
-        pid_t pid = fork();
-        if( pid == 0)
-            child_process();
-        if(pid < 0)
-        {
-            printf("create child process error\n");
-            exit(-1);
-        }
-    }
-     while (wait(NULL) != 0);
-    
-    
+   child_process();
+    return 0;
 }

@@ -11,6 +11,7 @@
 #include "timer.h"
 #include <list>
 #include <errno.h>
+#include "Logger.h"
 
 
 extern int get_uuid();
@@ -103,7 +104,7 @@ void remove_elem_from_queue(T& queue, Q& current_co)
     {
         if(*iter == current_co)
         {
-            LOG_DEBUG("co_id=%d release", current_co->co_id);
+            LOG_DEBUG("co_id=%d release", current_co->routine_id);
             iter = queue.erase(iter);        
         }    
         else
