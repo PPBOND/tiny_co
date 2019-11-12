@@ -35,8 +35,7 @@ static sleep_pfn_t g_sys_sleep_func       = (sleep_pfn_t)dlsym(RTLD_NEXT,"sleep"
 
 
 extern "C" ssize_t read(int fd, void *buf, size_t count)
-{
-	LOG_DEBUG("call hook read !!!!!!!");
+{	
 	ev_register_to_manager(fd, EPOLLIN ,EPOLL_CTL_ADD);
     int ret = g_sys_read_func(fd, buf, count);
 	return ret;
@@ -53,19 +52,40 @@ extern "C" int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 extern "C" ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
-    LOG_DEBUG("call hook write  %s!!!!!!! fd=%d", (const char *)buf,fildes );
-    ev_register_to_manager(fildes, EPOLLOUT ,EPOLL_CTL_ADD);
-	int ret = g_sys_write_func(fildes, buf, nbyte);
-	return ret;
+	size_t wrotelen =0;
+	int retlen = g_sys_write_func(fildes, (const char*)buf+ wrotelen, nbyte -wrotelen );
+	if(retlen == 0)
+		return  retlen;
+	
+	if(retlen >0)
+	{
+		wrotelen += retlen;
+	}
+
+	while(wrotelen < nbyte)
+	{
+
+		ev_register_to_manager(fildes, EPOLLOUT, EPOLL_CTL_ADD);
+		retlen = g_sys_write_func(fildes, (const char*)buf + wrotelen, nbyte -wrotelen );
+		
+		if(retlen <=0)
+			break;
+		
+		wrotelen += retlen;	
+	}
+
+	if(retlen<=0 &&wrotelen ==0 )
+		return retlen;
+	return wrotelen;
 
 }
 
 extern "C" unsigned int sleep(unsigned int seconds)
 {
 	LOG_DEBUG("sleep begin");
-	co_struct* current_co = get_current();
-    current_co->status    = Status::SLEEPING;
-	co_centor.time_manager.AddTimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
+	CoRoutine_t* current_co = get_current();
+    current_co->status    = Status::sleeping;
+	sche_centor.time_manager.addtimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
     co_yield();
     LOG_DEBUG("sleep end");
 	return 0;

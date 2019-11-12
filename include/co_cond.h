@@ -11,5 +11,5 @@ public:
     void cond_wake_once();
     void cond_wake_all();
 
-    std::deque<co_struct*> wait_queue;
+    std::deque<CoRoutine_t*> cond_wait_queue;
 };

@@ -2,7 +2,7 @@
 #include "comm_tools.h"
 #include "coroutine.h"
 
-TimerElem *CTimerManager::AddTimer(FuncPtrOnTimeout expired_func, void *data,
+TimerElem *Timer_Manager::addtimer(FuncPtrOnTimeout expired_func, void *data,
                                    uint64_t expired_ms, int flag)
 {
     TimerElem *timer_elem = (TimerElem *)malloc(sizeof(TimerElem));
@@ -18,9 +18,9 @@ TimerElem *CTimerManager::AddTimer(FuncPtrOnTimeout expired_func, void *data,
     return timer_elem;
 }
 
-int CTimerManager::DelTimer(TimerElem *timer_elem)
+int Timer_Manager::deltimer(TimerElem *timer_elem)
 {
-    if (timer_elem == NULL) 
+    if(timer_elem == NULL) 
         return -1;
 
     m_min_heap.remove(timer_elem);
@@ -29,10 +29,10 @@ int CTimerManager::DelTimer(TimerElem *timer_elem)
     return 0;
 }
 
-void CTimerManager::CheckExpire()
+void Timer_Manager::checkexpire()
 {
 
-    LOG_DEBUG("min_heap.size=%d\n", m_min_heap.size());
+    LOG_DEBUG("min_heap.size=%d", m_min_heap.size());
     while (m_min_heap.size() > 0)
     {
         struct timeval tv;
@@ -59,23 +59,23 @@ void CTimerManager::CheckExpire()
             m_min_heap.push(top_elem);
         }
         else
-            this->DelTimer(top_elem);
+            this->deltimer(top_elem);
     }
     return;
 }
 
-struct timeval CTimerManager::get_mix_time()
+struct timeval Timer_Manager::get_mix_time()
 {
     TimerElem *top_elem = m_min_heap.top();
     return top_elem->tv;
 }
 
-int CTimerManager::size()
+int Timer_Manager::size()
 {
     return m_min_heap.size();
 }
 
-bool CTimerManager::empty()
+bool Timer_Manager::empty()
 {
     return m_min_heap.size() == 0;
 }
