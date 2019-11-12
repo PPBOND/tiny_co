@@ -57,7 +57,7 @@ public:
 
 
     Logger(){
-        std::string file_name = "zyw_co-";
+        std::string file_name = "../log/zyw_co-";
         file_name +=getCurrentSystemTime(false)+".txt";
         m_writer.open(file_name,std::ofstream::out | std::ofstream::app);
     }

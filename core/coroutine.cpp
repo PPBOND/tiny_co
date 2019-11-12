@@ -100,6 +100,10 @@ ready_co_run:
             }
             else if(ready_co->status == Status::exit && !(ready_co->is_joinable))
                 co_releae(ready_co);
+            /*这里临时修复,如果被等待的协程sleep同时等待协程joinable那将永远无法执行到定时器
+              下一步准备实现:将join跟被join的协程根据标志位关联,当被join执行退出时,修改与之关联的join协程的状态为ready同时加入到就绪队列中
+             */
+             time_manager.checkexpire();
         }
     }
 }

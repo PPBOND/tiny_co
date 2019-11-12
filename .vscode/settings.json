@@ -51,7 +51,11 @@
         "mutex": "cpp",
         "ratio": "cpp",
         "unordered_map": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "fstream": "cpp",
+        "map": "cpp",
+        "sstream": "cpp",
+        "xtree": "cpp"
     },
     "debug.console.fontSize": 18
 }

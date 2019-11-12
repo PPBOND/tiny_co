@@ -53,7 +53,7 @@ extern "C" int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 extern "C" ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
 	size_t wrotelen =0;
-	int retlen = g_sys_write_func(fildes, buf+ wrotelen, nbyte -wrotelen );
+	int retlen = g_sys_write_func(fildes, (const char*)buf+ wrotelen, nbyte -wrotelen );
 	if(retlen == 0)
 		return  retlen;
 	
@@ -66,7 +66,7 @@ extern "C" ssize_t write(int fildes, const void *buf, size_t nbyte)
 	{
 
 		ev_register_to_manager(fildes, EPOLLOUT, EPOLL_CTL_ADD);
-		retlen = g_sys_write_func(fildes, buf+ wrotelen, nbyte -wrotelen );
+		retlen = g_sys_write_func(fildes, (const char*)buf + wrotelen, nbyte -wrotelen );
 		
 		if(retlen <=0)
 			break;
