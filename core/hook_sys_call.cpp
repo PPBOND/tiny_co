@@ -111,7 +111,7 @@ ssize_t sendto(int socket, const void *message, size_t length,
 {
 	/*
 		no enable sys call ? sys
-		2.( !lp || lp is non block ) ? sys
+		( !lp || lp is non block ) ? sys
 		3.try
 		4.wait
 		5.try
