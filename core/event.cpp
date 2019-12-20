@@ -12,8 +12,10 @@ int Event::alter_status(int sock_fd , int events, int ops)
 }
 
 
-int Epoll_event::updateEvent( Event * ev)
+int Epoll_event::updateEvent( Event * ev,int timeout)
 {
+    auto& event_timer =ev->event_timer;
+   
    // LOG_DEBUG("ev->epoll_ev.data.fd =%d", ev->epoll_ev.data.fd);
     int ret= epoll_ctl(epoll_fd, ev->ops , ev->epoll_ev.data.fd, &ev->epoll_ev);
     //LOG_DEBUG("-----------------------------------------ret=%d",ret);

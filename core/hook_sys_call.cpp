@@ -33,10 +33,16 @@ static sleep_pfn_t g_sys_sleep_func       = (sleep_pfn_t)dlsym(RTLD_NEXT,"sleep"
 
 
 
-
+void onTimeout(void * data)
+{
+	CoRoutine_t* co = (CoRoutine_t*)data;
+	current_co->time_event->isexec = true;
+	co_resume(co);
+}
 extern "C" ssize_t read(int fd, void *buf, size_t count)
 {	
-	ev_register_to_manager(fd, EPOLLIN ,EPOLL_CTL_ADD);
+	
+	ev_register_to_manager(fd, EPOLLIN ,EPOLL_CTL_ADD, 5);
     int ret = g_sys_read_func(fd, buf, count);
 	return ret;
 }
@@ -84,8 +90,8 @@ extern "C" unsigned int sleep(unsigned int seconds)
 {
 	LOG_DEBUG("sleep begin");
 	CoRoutine_t* current_co = get_current();
-    current_co->status    = Status::sleeping;
-	sche_centor.time_manager.addtimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
+    current_co->status      = Status::sleeping;
+	current_co->time_event  = addtimer(wake_sleep_co, current_co, seconds, ONCE_EXEC);
     co_yield();
     LOG_DEBUG("sleep end");
 	return 0;

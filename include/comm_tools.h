@@ -13,6 +13,14 @@
 #define ONCE_EXEC  0
 #define CYCLE_EXEC 1
 
+const int EVENT_NONE = 0x0;
+const int EVENT_READ = 0x1;
+const int EVENT_WRITE = 0x4;
+const int EVENT_ERROR = 0x8; //not need to add
+const int EVENT_RDHUP = 0x2000; //equal to EPOLLRDHUP
+const int EVENT_ET = 1u << 31; 
+const int EVENT_ONESHOT = 1u << 30; 
+const int EVENT_TIMEOUT = 1u << 16; 
 
 
 

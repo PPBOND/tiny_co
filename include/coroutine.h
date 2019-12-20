@@ -48,6 +48,8 @@ public:
     void* exit_ret    = NULL;
     bool  is_end      = false; 
     bool  is_joinable = false;
+    TimerElem*  time_event;
+
     Status status     = Status::init;
 
 };
@@ -78,6 +80,10 @@ public:
 
 
 extern Schedule_Centor  sche_centor;
+
+
+
+
 void co_init();
 
 void co_yield();

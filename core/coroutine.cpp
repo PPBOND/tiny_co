@@ -176,9 +176,10 @@ void co_releae(CoRoutine_t* release_co)
 
 
 
-void ev_register_to_manager(int fd, int event,int ops)
+void ev_register_to_manager(int fd, int event,int ops,int timeout)
 {
     CoRoutine_t* current_co = get_current();
+    current_co->time_event = addtimer(onTimeout, current_co, timeout, ONCE_EXEC);
     current_co->status    = Status::waiting;
     current_co->ev.alter_status(fd, event, ops);
     sche_centor.ev_manger.updateEvent(&current_co->ev);
