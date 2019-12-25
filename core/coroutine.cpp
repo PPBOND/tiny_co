@@ -182,11 +182,10 @@ void ev_register_to_manager(Event* ev,int timeout)
 {
     
     CoRoutine_t* current_co = get_current();
-    ev.co = current_co;
     current_co->status      = Status::waiting;
-    current_co->ev.set_event(fd, event, ops);
-    sche_centor.ev_manger.update_event(ev, timeout);
-    sche_centor.wait_manager.push_back(current_co);
+    ev->co = current_co;
+    Schedule_Centor::update_event(ev, timeout);
+    Schedule_Centor::add_wait_queue(current_co);
     co_yield();
 }
 

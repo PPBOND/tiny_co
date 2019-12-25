@@ -80,7 +80,7 @@ void Epoll_event::wake_event()
 
         CoRoutine_t* ready_co = (CoRoutine_t*)active_ev[i].data.ptr;
         ready_co->status = Status::ready;
-        sche_centor.wait_manager.remove(ready_co);
+        Schedule_Centor::remove_wait_list(ready_co);
         sche_centor.ready_manager.push_back(ready_co);
     }
 

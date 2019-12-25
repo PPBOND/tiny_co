@@ -22,18 +22,19 @@ public:
     }
 
 
-    Event* alloc_event_by_fd(int fd){
+    static Event* alloc_event_by_fd(int fd){
         Event* ev = new Event();
         event_map[fd] = ev;
         return ev;
     }
     
-    Event* get_event_by_fd(int fd){
+    static Event* get_event_by_fd(int fd){
         if(event_map[fd].empty())
             return nullptr;
         return event_map[fd];
     }
-    int free_event_by_fd(int fd){
+
+    static int free_event_by_fd(int fd){
 
         if(!event_map[fd].empty()){
             delete event_map[fd];
@@ -43,6 +44,29 @@ public:
             return -1;
         
     }
+
+    static void add_wait_list(CoRoutine_t * co)
+    {
+        wait_manager.push_back(co);
+    }
+    
+    static void remove_wait_list(CoRoutine_t* co){
+        wait_manager.remove(co);
+    }
+
+    static void add_ready_queue(CoRoutine_t* co){
+        ready_manager.push_back(co);
+    }
+
+    static void remove_top_ready_queue(){
+        ready_manager.pop_front();
+    }
+
+    CoRoutine_t* get_top_ready_queue(){
+        return ready_manager.front();        
+    }
+
+    
 
 public:
     int chain_index;
