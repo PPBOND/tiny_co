@@ -75,7 +75,6 @@ public:
         }
         return event_map[current_co];
     }
-    void del_e
 public:
     int chain_index;
     int generator_uuid =0;
