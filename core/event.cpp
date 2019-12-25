@@ -3,23 +3,50 @@
 #include <sys/socket.h>
 #include "Logger.h"
 
-int Event::alter_status(int sock_fd , int events, int ops)
+int Event::set_event(int sock_fd, int events)
 {
+    if(epoll_ev.events == events)
+        ev_changed = false;
+    else 
+        ev_changed = true;
+
+    if(in_loop)
+        ops = EPOLL_CTL_MOD;
+    else
+        ops = EPOLL_CTL_ADD;
+
     epoll_ev.events  = events; 
     epoll_ev.data.fd = sock_fd;
-    this->ops  = ops;
+
+   
+    
     return 0;
 }
 
 
-int Epoll_event::updateEvent( Event * ev,int timeout)
+int Epoll_event::update_event(Event * ev,int timeout)
 {
-    auto& event_timer =ev->event_timer;
-   
-   // LOG_DEBUG("ev->epoll_ev.data.fd =%d", ev->epoll_ev.data.fd);
-    int ret= epoll_ctl(epoll_fd, ev->ops , ev->epoll_ev.data.fd, &ev->epoll_ev);
-    //LOG_DEBUG("-----------------------------------------ret=%d",ret);
-    return ret;
+     //负数表示不需要定时加入
+    if(timeout >= 0)
+        ev->update_time(timeout);
+
+    if(ev->ev_changed){   
+        ev->in_loop = true;
+        ev->ev_changed = false;
+        return epoll_ctl(epoll_fd, ev->ops, ev->fd(), &ev->epoll_ev);
+    }
+    
+    return 0;
+}
+
+int Epoll_event::remove_event(Event* ev)
+{
+    if(ev->in_loop){
+        ev->remove_timer();
+        ev->in_loop = false;
+        return epoll_ctl(epoll_fd, EPOLL_CTL_DEL , ev->fd(), &ev->epoll_ev);
+    }
+    return 0;
 }
 
 
@@ -50,23 +77,10 @@ void Epoll_event::wake_event()
         int active_fd = active_ev[i].data.fd;
         LOG_DEBUG("active_fd = %d \n", active_fd);
 
-        for(auto list_node =  sche_centor.wait_manager.begin(); list_node != sche_centor.wait_manager.end();)
-        {
-            int event_fd = (*list_node)->ev.get_fd();
-            LOG_DEBUG("event_fd =%d \n", event_fd);
-
-            if(event_fd == active_fd)
-            {   
-                sche_centor.ready_manager.push_back(*list_node);
-                (*list_node)->status = Status::ready;
-                (*list_node)->ev.alter_status(active_fd,active_ev[i].events,EPOLL_CTL_DEL);
-                updateEvent(&(*list_node)->ev);
-                list_node = sche_centor.wait_manager.erase(list_node);
-                
-                break;
-            }
-            ++ list_node;
-        }
+        CoRoutine_t* ready_co = (CoRoutine_t*)active_ev[i].data.ptr;
+        ready_co->status = Status::ready;
+        sche_centor.wait_manager.remove(ready_co);
+        sche_centor.ready_manager.push_back(ready_co);
     }
 
 }

@@ -3,37 +3,48 @@
 #include "coroutine.h"
 
 
-int Timer_Manager::addTimeEvent(Time_event * time_event)
+int Timer_Manager::add_timer(Time_Event * time_event)
 {
-    time_event.update_time_cycle();
-    m_min_heap.push(timer_elem);
+    
+    if(time_event->in_heap == true)
+        remove_timer(time_event);
+    else 
+        time_event->in_heap = true;
+    
+    m_min_heap.push(time_event);
+    
     return 0;
 }
 
 
-int Timer_Manager::delTimeEvent(Time_event *time_event)
+int Timer_Manager::del_timer(Time_Event *time_event)
 {
-    if(time_event == NULL) 
+    if(time_event == NULL)
         return -1;
 
-    m_min_heap.remove(time_event);
+    remove_timer(time_event);
     delete time_event;
-    time_event = NULL;
+    
     return 0;
 }
 
-void Timer_Manager::checkExpire()
+int  Timer_Manager::remove_timer(Time_Event * time_event)
+{
+    return m_min_heap.remove(time_event);
+}
+
+
+void Timer_Manager::check_expired()
 {
 
-    LOG_DEBUG("min_heap.size=%d", m_min_heap.size());
+    ////LOG_DEBUG("min_heap.size=%d", m_min_heap.size());
     while (m_min_heap.size() > 0)
     {
         
-        Time_event *top_timer = m_min_heap.top();       
+        Time_Event *top_timer = m_min_heap.top();       
         if (top_timer->ms_time() < time_now()){
 
-            LOG_DEBUG("timeout need exec\n");
-            top_timer->is_timout = true;
+            //LOG_DEBUG("timeout need exec\n");
             top_timer->run();
         }
         else
@@ -45,12 +56,12 @@ void Timer_Manager::checkExpire()
             m_min_heap.push(top_timer);
         }
         else
-            this->delTimeEvent(top_timer);
+            remove_timer(top_timer);
     }
     return;
 }
 
-struct timeval Timer_Manager::get_mix_time()
+long Timer_Manager::get_mix_time()
 {
     return  m_min_heap.top()->ms_time();
      

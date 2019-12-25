@@ -12,7 +12,7 @@
 
 #define ONCE_EXEC  0
 #define CYCLE_EXEC 1
-
+#define SOCK_TIMEOUT 5000
 const int EVENT_NONE = 0x0;
 const int EVENT_READ = 0x1;
 const int EVENT_WRITE = 0x4;

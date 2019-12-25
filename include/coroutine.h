@@ -27,8 +27,7 @@ using Func = void* (*)(void* arg);
 struct CoRoutine_t
 {
     CoRoutine_t() = default;
-    CoRoutine_t(Func func, void *arg, bool isjoin):routine(func),co_arg(arg),is_joinable(isjoin){
-
+    CoRoutine_t(Func func, void *arg):routine(func),co_arg(arg),is_joinable(false){
         getcontext(&this->u_context);
         this->status = Status::ready;
         this->routine_id = get_uuid();
@@ -48,8 +47,6 @@ public:
     void* exit_ret    = NULL;
     bool  is_end      = false; 
     bool  is_joinable = false;
-    TimerElem*  time_event;
-
     Status status     = Status::init;
 
 };
@@ -64,7 +61,21 @@ class Schedule_Centor
 {
 
 public:
+    Event* alloc_event_by_fd(int fd){
+        Event* ev = new Event();
+        event_map[fd] = ev;
+        return ev;
+    }
     void shedule_run();
+    void get_event()
+    {
+        CoRoutine_t * current_co = get_current();
+        if(event_map[current_co].empty()){
+            event_map[current_co()] = new Event();
+        }
+        return event_map[current_co];
+    }
+    void del_e
 public:
     int chain_index;
     int generator_uuid =0;
@@ -74,6 +85,7 @@ public:
     Wait_Manager   wait_manager;
     Ready_Manager  ready_manager;
     CoRoutine_t    main_co;
+    std::map<int ,Event*> event_map; 
 };
 
 

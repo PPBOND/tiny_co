@@ -40,9 +40,9 @@ void co_init()
 
 
 
-int  co_create(CoRoutine_t*& create_co, Func func, void *arg, bool isjoin)
+int  co_create(CoRoutine_t*& create_co, Func func, void *arg)
 {
-    create_co = new CoRoutine_t(func, arg,isjoin);
+    create_co = new CoRoutine_t(func, arg);
     
     makecontext(&create_co->u_context, (void (*)())func_entry, 1, create_co); 
     sche_centor.ready_manager.push_back(create_co);
@@ -117,8 +117,10 @@ void  co_yield()
     CoRoutine_t * prev     = sche_centor.call_stack[sche_centor.chain_index -2];
     sche_centor.chain_index--;
 
-    if(current->is_end == true)    current->status = Status::exit;
-    else if(current->status == Status::running)  current->status = Status::ready;
+    if(current->is_end == true)    
+        current->status = Status::exit;
+    else if(current->status == Status::running)  
+        current->status = Status::ready;
        
     prev->status = Status::running;
     swapcontext(&current->u_context, &prev->u_context);
@@ -176,13 +178,14 @@ void co_releae(CoRoutine_t* release_co)
 
 
 
-void ev_register_to_manager(int fd, int event,int ops,int timeout)
+void ev_register_to_manager(Event* ev,int timeout)
 {
+    
     CoRoutine_t* current_co = get_current();
-    current_co->time_event = addtimer(onTimeout, current_co, timeout, ONCE_EXEC);
-    current_co->status    = Status::waiting;
-    current_co->ev.alter_status(fd, event, ops);
-    sche_centor.ev_manger.updateEvent(&current_co->ev);
+    ev.co = current_co;
+    current_co->status      = Status::waiting;
+    current_co->ev.set_event(fd, event, ops);
+    sche_centor.ev_manger.update_event(ev, timeout);
     sche_centor.wait_manager.push_back(current_co);
     co_yield();
 }

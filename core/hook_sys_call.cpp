@@ -41,14 +41,16 @@ void onTimeout(void * data)
 }
 extern "C" ssize_t read(int fd, void *buf, size_t count)
 {	
-	
-	ev_register_to_manager(fd, EPOLLIN ,EPOLL_CTL_ADD, 5);
+	Event* ev = get_event_by_fd(fd);
+	ev.set_event(fd, EPOLLIN);
+	ev_register_to_manager(ev,5);
     int ret = g_sys_read_func(fd, buf, count);
 	return ret;
 }
 
 extern "C" int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
+	get_
     LOG_DEBUG("call hook accept !!!!!!!");
 	ev_register_to_manager(sockfd, EPOLLIN, EPOLL_CTL_ADD);
     int fd = g_sys_accept_func(sockfd, addr, addrlen);

@@ -55,7 +55,9 @@
         "fstream": "cpp",
         "map": "cpp",
         "sstream": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "cctype": "cpp",
+        "concepts": "cpp"
     },
     "debug.console.fontSize": 18
 }
