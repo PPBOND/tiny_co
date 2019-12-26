@@ -72,7 +72,7 @@ void event_manager_t::wake_event()
         event_t* ev = (event_t*)active_ev[i].data.ptr;
         ev->ret_status = active_ev[i].events;        
         coroutine_t* active_co = ev->co;
-        active_co->status = status::ready;
+        active_co->co_status = status::ready;
         schedule_centor::remove_wait_list(active_co);
         schedule_centor::add_ready_queue(active_co);
 }
