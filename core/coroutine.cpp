@@ -95,13 +95,13 @@ ready_co_run:
 
             co_resume(ready_co);
 
-	        LOG_DEBUG("co_status=%d",ready_co->status); 
+	        LOG_DEBUG("co_status=%d",ready_co->co_status); 
 
-            if(ready_co->status == status::ready)
+            if(ready_co->co_status == status::ready)
             {
                 ready_manager.push_back(ready_co);   
             }
-            else if(ready_co->status == status::exit && !(ready_co->is_joinable))
+            else if(ready_co->co_status == status::exit && !(ready_co->is_joinable))
                 co_releae(ready_co);
             /*这里临时修复,如果被等待的协程sleep同时等待协程joinable那将永远无法执行到定时器
               下一步准备实现:将join跟被join的协程根据标志位关联,当被join执行退出时,修改与之关联的join协程的状态为ready同时加入到就绪队列中
@@ -121,13 +121,13 @@ void  co_yield()
     chain_index--;
 
     if(current->is_end == true)    
-        current->status = status::exit;
-    else if(current->status == status::running)  
-        current->status = status::ready;
+        current->co_status = status::exit;
+    else if(current->co_status == status::running)  
+        current->co_status = status::ready;
        
-    prev->status = status::running;
+    prev->co_status = status::running;
     swapcontext(&current->u_context, &prev->u_context);
-    current->status = status::running;
+    current->co_status = status::running;
 
 }
 
@@ -139,7 +139,7 @@ int co_join(coroutine_t* &co, void** retval)
     if(co->is_joinable == false)
         return -1;
 
-    while(co->status != status::exit)
+    while(co->co_status != status::exit)
         co_yield();
     
     if(retval != nullptr) 
@@ -153,26 +153,26 @@ int co_join(coroutine_t* &co, void** retval)
 
 void co_resume(coroutine_t* ready_co)
 {
-    if(ready_co->status != status::ready)
+    if(ready_co->co_status != status::ready)
     {
-        LOG_DEBUG("co->status != READY,=%d",ready_co->status);
+        LOG_DEBUG("co->co_status != READY,=%d",ready_co->co_status);
         return;
     }
 
     schedule_centor::call_stack[chain_index++] = ready_co;
     coroutine_t * prev_co  = schedule_centor::call_stack[chain_index -2];
 
-    ready_co->status     = status::running;    
-    prev_co->status      = status::ready;
+    ready_co->co_status     = status::running;    
+    prev_co->co_status      = status::ready;
     swapcontext(&prev_co->u_context, &ready_co->u_context);
-    prev_co->status      = status::running;
+    prev_co->co_status      = status::running;
 }
 
 
 
 void co_releae(coroutine_t* release_co)
 {
-    if(release_co->status != status::exit)
+    if(release_co->co_status != status::exit)
         return;
 
     LOG_DEBUG("co_id=%d release\n", release_co->routine_id);
@@ -185,7 +185,7 @@ void ev_register_to_manager(event_t* ev,int timeout)
 {
     
     coroutine_t* current_co = get_current();
-    current_co->status      = status::waiting;
+    current_co->co_status      = status::waiting;
     ev->co = current_co;
     schedule_centor::update_event(ev, timeout);
     schedule_centor::add_wait_list(current_co);
@@ -197,7 +197,7 @@ void ev_register_to_manager(event_t* ev,int timeout)
 void wake_sleep_co(void *co)
 {
     coroutine_t* wake_co = (coroutine_t*) co;
-    wake_co->status = status::ready;
+    wake_co->co_status = status::ready;
     schedule_centor::add_ready_queue(wake_co);
 }
 

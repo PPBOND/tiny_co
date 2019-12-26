@@ -22,14 +22,14 @@ extern int getcontext(ucontext_t *) asm("getcontext");
 using Func = void* (*)(void* arg);
 
 
-
+class event_t;
 //协程结构体
 struct coroutine_t
 {
     coroutine_t() = default;
     coroutine_t(Func func, void *arg):routine(func),co_arg(arg),is_joinable(false){
         getcontext(&this->u_context);
-        this->status = status::ready;
+        this->co_status = status::ready;
         this->routine_id = get_uuid();
         this->u_context.uc_stack.ss_sp    = this->stack;
         this->u_context.uc_stack.ss_size  = default_size;
@@ -47,7 +47,7 @@ public:
     void* exit_ret    = NULL;
     bool  is_end      = false; 
     bool  is_joinable = false;
-    status status     = status::init;
+    status co_status     = status::init;
 
 };
 

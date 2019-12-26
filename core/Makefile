@@ -7,8 +7,8 @@ LIBPATH  = ../libs/
 
 vpath %.h ./inc
 
-OBJS     = event.o socket.o coroutine.o   hook_sys_call.o co_cond.o timer.o	swapcontext.o
-SRCS     = event.cpp  socket.cpp coroutine.cpp  hook_sys_call.cpp co_cond.cpp timer.cpp swapcontext.S
+OBJS     = event.o     coroutine.o        timer.o   swapcontext.o
+SRCS     = event.cpp   coroutine.cpp      timer.cpp swapcontext.S
 
 
 all:$(OBJS)

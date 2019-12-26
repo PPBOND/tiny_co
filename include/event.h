@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include "comm_tools.h"
+#include "schedule.h"
 
 
 
@@ -21,7 +22,7 @@ public:
         event_t* ev = (event_t*)data;
         ev->ret_status = EVENT_TIMEOUT;
         coroutine_t* time_co = ev->co;
-        time_co->status = status::ready;
+        time_co->co_status = status::ready;
     }
 
     event_t():event_timer(on_timeout, this, SOCK_TIMEOUT ,ONCE_EXEC),in_loop(false),
@@ -45,10 +46,6 @@ public:
 
     //将fd,事件类型注册到event中
     int set_event(int sockfd , int events);
-
-    int fd() { 
-        return fd; 
-    }
     
     int ret_event() { 
         return ret_status;

@@ -1,21 +1,25 @@
 #pragma once
 #include "coroutine.h"
+#include "event.h"
+#include "timer.h"
+#include <map>
 //保存被调方与调用方的链接关系,管理event事件与超时事件.
 
 
 static int chain_index = 0;
 
-
+#define ready_manager_t   std::deque<coroutine_t*>
+#define wait_manager_t    std::list<coroutine_t*>
 
 class schedule_centor
 {
 
 public:
     static int  update_event(event_t* ev,int time_out){
-        return ev_manager.update_event(ev, timeout);
+        return ev_manager.update_event(ev, time_out);
     }
 
-    static int  remove_event(Event* ev){
+    static int  remove_event(event_t* ev){
         return ev_manager.remove_event(ev);
     }
     
@@ -38,7 +42,7 @@ public:
         
         if(event_map[fd].empty())
             return nullptr;
-            
+
         return event_map[fd];
     }
 
@@ -92,15 +96,14 @@ public:
 
 
 public:
-    static int generator_uuid =0;
     static coroutine_t     main_co;
     
     static coroutine_t*   call_stack[128];
     static event_manager_t    ev_manager;
     static timer_manager_t  timer_manager;
-    static wait_manager   wait_manager;
-    static ready_manager  ready_manager;
-    static std::map<int ,Event*> event_map; 
+    static wait_manager_t   wait_manager;
+    static ready_manager_t  ready_manager;
+    static std::map<int ,event_t*> event_map; 
 };
 
 
