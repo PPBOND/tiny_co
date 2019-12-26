@@ -25,7 +25,7 @@ int Event::set_event(int sock_fd, int events)
 }
 
 
-int Epoll_event::update_event(Event * ev,int timeout)
+int event_manager_t::update_event(event_t* ev,int timeout)
 {
      //负数表示不需要定时加入
     if(timeout >= 0)
@@ -40,7 +40,7 @@ int Epoll_event::update_event(Event * ev,int timeout)
     return 0;
 }
 
-int Epoll_event::remove_event(Event* ev)
+int event_manager_t::remove_event(event_t* ev)
 {
     if(ev->in_loop){
         ev->remove_timer();
@@ -51,7 +51,7 @@ int Epoll_event::remove_event(Event* ev)
 }
 
 
-int Epoll_event::create(int maxev, int time_out)
+int event_manager_t::create(int maxev, int time_out)
 {  
    maxevent = maxev;
    timeout  = time_out;
@@ -60,45 +60,40 @@ int Epoll_event::create(int maxev, int time_out)
 }
 
 
-int Epoll_event::wait_event()
+int event_manager_t::wait_event()
 {
     int wait_time = get_min_time();
-    LOG_DEBUG("epoll_wait`s timeout=%d\n", wait_time);
     active_num = epoll_wait(epoll_fd, active_ev, maxevent, wait_time) ;
-    return_if(active_num < 0, "epoll_wait error");
-    LOG_DEBUG("epoll wait, active_num = %d\n", active_num);
     return active_num;
 }
 
-void Epoll_event::wake_event()
+void event_manager_t::wake_event()
 {
     for(int i = 0; i< this->active_num; ++i)
     {
-       
-        int active_fd = active_ev[i].data.fd;
-        LOG_DEBUG("active_fd = %d \n", active_fd);
+        event_t* ev = (event_t*)active_ev[i].data.ptr;
+        ev->ret_status = active_ev[i].data.events;
+        
+        coroutine_t* active_co = ev->co;
+        active_co->status = status::ready;
 
-        CoRoutine_t* ready_co = (CoRoutine_t*)active_ev[i].data.ptr;
-        ready_co->status = Status::ready;
-        Schedule_Centor::remove_wait_list(ready_co);
-        sche_centor.ready_manager.push_back(ready_co);
+        schedule_centor::remove_wait_list(active_co);
+        schedule_centor::add_ready_queue(active_co);
     }
 
 }
 
 
 
-int Epoll_event::get_min_time()
+int event_manager_t::get_min_time()
 {
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
 
-    if(sche_centor.time_manager.empty())
+    if(schedule_centor::timer_manager.empty())
         return 5000;
 
-    struct timeval  mix_time = sche_centor.time_manager.get_mix_time();
-    int time_diff = (mix_time.tv_sec - tv.tv_sec)*1000 + (mix_time.tv_usec - tv.tv_usec)/1000;
-    LOG_DEBUG("time_diff =%d", time_diff);
+    int time_diff =schedule_centor::timer_manager.get_mix_time() - time_now();
     return time_diff > 0 ? time_diff : 0; 
 
 }

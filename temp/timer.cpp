@@ -1,6 +1,5 @@
 #include "timer.h"
 #include "comm_tools.h"
-#include "coroutine.h"
 
 
 int timer_manager_t::add_timer(timer_event_t* time_ev)
@@ -20,7 +19,7 @@ int timer_manager_t::del_timer(timer_event_t* time_ev)
 {
     if(time_ev == NULL)
         return -1;
-
+    
     remove_timer(time_ev);
     delete time_ev;
     

@@ -12,35 +12,33 @@
 
 
 
-class Event
+class event_t
 {
 public:
 
     //超时回调唤醒协程,同时设置事件为超时状态
     static void on_timeout(void *data){
-        CoRoutine_t* wake_co = (CoRoutine_t*)data;
-        wake_co->ev.res_status = EVENT_TIMEOUT;
-        wake_co->status = Status::ready;
-        sche_centor.ready_manager.push_back(wake_co);
+        event_t* ev = (event_t*)data;
+        ev->ret_status = EVENT_TIMEOUT;
+        coroutine_t* time_co = ev->co;
+        time_co->status = status::ready;
     }
 
-    Event():event_timer(on_timeout,nullptr, SOCK_TIMEOUT ,ONCE_EXEC),in_loop(false),
-    ev_changed(true)
+    event_t():event_timer(on_timeout, this, SOCK_TIMEOUT ,ONCE_EXEC),in_loop(false),
+    ev_changed(true),epoll_ev.data.ptr(this)
     {
-        //bind_context(get_current());
+
         epoll_ev.events = -100;
         epoll_ev.data.fd  = -1;
-        epoll_ev.data.ptr = nullptr;
         ops = -1;
         res_status = EVENT_NONE;
     }
 
-    Event(int _fd, int _events):
-        event_timer(on_timeout,nullptr, SOCK_TIMEOUT ,ONCE_EXEC),
+    event_t(int _fd, int _events):
+        event_timer(on_timeout,this, SOCK_TIMEOUT ,ONCE_EXEC),
         in_loop(false),epoll_ev.data.fd(fd),ev_changed(true),
-        epoll_ev.events(_events)
+        epoll_ev.events(_events),epoll_ev.data.ptr(this)
      {
-        //bind_context(get_current());
         ops = -1;
         res_status = EVENT_NONE;
      }
@@ -51,8 +49,8 @@ public:
         return epoll_ev.data.fd; 
     }
     
-    int res_event() { 
-        return res_status;
+    int ret_event() { 
+        return ret_status;
     }
     
     int event_status() {
@@ -62,31 +60,26 @@ public:
     int update_time(int timeout)
     {
         event_timer.update_time(timeout);    
-        add_timer(&event_timer);
+        schedule_centor::add_timer(&event_timer);
     }
 
-    //将协程与事件绑定
-    void bind_context(){
-        epoll_ev.data.ptr= this;
-        event_timer.set_args(this);
-    }
-
+   
     int remove_timer(){
-        remove_timer(&event_timer);
+        return schedule_centor::remove_timer(&event_timer);
     }
     
-    int ops;
+    int  ops;
     bool in_loop;
     bool ev_changed;
-    int res_status;
-    Time_Event event_timer;
+    int  ret_status;
+    timer_event_t event_timer;
     struct epoll_event epoll_ev;
-    CoRoutine_t * co;
+    coroutine_t* co;
 
 };
 
 
-class Epoll_event
+class event_manager_t
 {
 public:
 

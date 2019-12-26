@@ -13,7 +13,7 @@
  其成员为c,因此可以遍历底层容器删除指定元素,再make_heap重新建立,复杂度为O(n)
 */
 template<typename T,typename Q>
-class Heap_Container : public std::priority_queue<T, std::vector<T>,Q>
+class heap_container_t : public std::priority_queue<T, std::vector<T>,Q>
 {
 
 public:
@@ -39,23 +39,24 @@ static inline  long time_now(){
 }
 
 
-class Time_Event {
+class timer_event_t {
 
 public:
 
-    using FuncPtrOnTimeout = void (*)(void *data);
+    using timer_callback = void (*)(void *data);
 
-    Time_Event(FuncPtrOnTimeout func, void *data_, int time_spec, int flag):expired_func(func),
-    data(data_),expired_ms(time_spec),total_ms(time_now() + time_spec),
-    cycle_flag(flag),in_heap(false){
+    timer_event_t(timer_callback func, void *data_, int time_spec, int flag):
+    expired_func(func),data(data_),expired_ms(time_spec),
+    total_ms(time_now() + time_spec),cycle_flag(flag),
+    in_heap(false){
 
     }
 
-    void set_args(void * data_){
+    void set_data(void * data_){
         this->data = data_;
     }
 
-    ~Time_Event(){
+    ~timer_event_t(){
 
     }
 
@@ -68,25 +69,25 @@ public:
 		this->total_ms = expired_ms + time_now();
 	}
 
-    bool operator >(const Time_Event & rhs){
+    bool operator >(const timer_event_t& rhs){
         return this->total_ms > rhs.total_ms;
     }
 
-    bool operator < (const Time_Event & rhs){
+    bool operator < (const timer_event_t& rhs){
         return this->total_ms < rhs.total_ms;
     }
-    
+
     long ms_time(){ 
         return this->total_ms; 
     }
-    
+
     void run() { 
-        return this->expired_func(data);
+        return this->expired_func(data); 
     }
 
-    FuncPtrOnTimeout expired_func; // 超时后执行的函数
-    void*  data;                    //expired_func_的参数
-    long  expired_ms;           //相对的超时时间,单位ms
+    timer_callback expired_func; // 超时后执行的函数
+    void* data;                    //expired_func_的参数
+    uint64_t expired_ms;           //相对的超时时间,单位ms
     long  total_ms;                //在插入时计算
     int   cycle_flag;              //是否循环执行
     bool  in_heap;                 //是否已经存在定时器最小堆中
@@ -96,23 +97,26 @@ public:
 
 struct cmp_time
 {
-    bool operator()(Time_Event* &lhs, Time_Event* &rhs){
+    bool operator()(timer_event_t*& lhs, timer_event_t*& rhs){
         return (*lhs) > (*rhs);
     }
 };
 
-class Timer_Manager 
+class timer_manager_t 
 {
 public:
-    int  add_timer(Time_Event * time_event);
-    int  remove_timer(Time_Event * time_event);                  
-    int  del_timer(Time_Event *time_event);       
+    timer_manager_t() = default;
+    ~timer_manager_t() = default;
+
+    int  add_timer(timer_event_t* time_ev);
+    int  remove_timer(timer_event_t* time_ev);                  
+    int  del_timer(timer_event_t* time_ev);       
     void check_expired();
     long get_mix_time();
     int  size();
     bool empty();    
 private:
-    Heap_Container <Time_Event*, cmp_time>  m_min_heap;
+    heap_container_t <timer_event_t*, cmp_time>  m_min_heap;
 };
 
 
