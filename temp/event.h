@@ -9,7 +9,7 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include "comm_tools.h"
-
+#include "timer.h"
 
 
 class event_t
@@ -98,6 +98,4 @@ public:
     struct epoll_event active_ev[100];
     
 };
-
-
 

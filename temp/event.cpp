@@ -1,7 +1,5 @@
 #include "event.h"
-#include "coroutine.h"
 #include <sys/socket.h>
-#include "Logger.h"
 
 int event_t::set_event(int sock_fd, int events)
 {
@@ -72,11 +70,14 @@ void event_manager_t::wake_event()
     for(int i = 0; i< this->active_num; ++i)
     {
         event_t* ev = (event_t*)active_ev[i].data.ptr;
-        ev->ret_status = active_ev[i].events;        
+        ev->ret_status = active_ev[i].events;
+	/*        
         coroutine_t* active_co = ev->co;
         active_co->status = status::ready;
+
         schedule_centor::remove_wait_list(active_co);
         schedule_centor::add_ready_queue(active_co);
+	*/    
 }
 
 }
@@ -85,7 +86,7 @@ void event_manager_t::wake_event()
 
 int event_manager_t::get_min_time()
 {
-
+/*
     struct timeval  tv;
     gettimeofday(&tv,NULL);   
 
@@ -94,5 +95,6 @@ int event_manager_t::get_min_time()
 
     int time_diff =schedule_centor::timer_manager.get_mix_time() - time_now();
     return time_diff > 0 ? time_diff : 0; 
+*/
 	return 0;
 }
