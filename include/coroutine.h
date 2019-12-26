@@ -15,7 +15,7 @@
 
 
 extern int get_uuid();
-#define Default_size 8096
+#define default_size 8096
 enum class status { init = 1, ready, running, sleeping,waiting, exit};
 extern int swapcontext(ucontext_t *, ucontext_t *) asm("swapcontext");
 extern int getcontext(ucontext_t *) asm("getcontext");
@@ -32,22 +32,22 @@ struct coroutine_t
         this->status = status::ready;
         this->routine_id = get_uuid();
         this->u_context.uc_stack.ss_sp    = this->stack;
-        this->u_context.uc_stack.ss_size  = Default_size;
+        this->u_context.uc_stack.ss_size  = default_size;
         this->u_context.uc_stack.ss_flags = 0;
         this->u_context.uc_link = NULL; 
     }
     
 public:
-    Event ev;
+    
     unsigned int   routine_id;
     ucontext_t     u_context;
-    char stack[Default_size];
+    char stack[default_size];
     Func  routine     = NULL;
     void* co_arg      = NULL;
     void* exit_ret    = NULL;
     bool  is_end      = false; 
     bool  is_joinable = false;
-    Status status     = Status::init;
+    status status     = status::init;
 
 };
 
@@ -57,31 +57,18 @@ public:
 
 
 
-
-
-
-extern schedule_centor  sche_centor;
-
-
-
-
+coroutine_t* get_current();
 void co_init();
-
-void co_yield();
-void event_loop_run();
 void co_resume(coroutine_t* co);
+void co_yield();
 void co_releae(coroutine_t* co);
 void wake_sleep_co (void *co);
-coroutine_t* get_current();
 void ev_register_to_manager(int fd, int event,int ops);
 int  co_create(coroutine_t* &co, Func func, void *arg, bool isjoin );
-int  co_timer(coroutine_t* &co, Func func, void *arg,unsigned int time);
 int  co_join(coroutine_t* &co, void** retval);
+void event_loop_run();
 
 
-TimerElem * addtimer(FuncPtrOnTimeout expired_func, void *data,
-                                   uint64_t expired_ms, int flag);
-int deltimer(TimerElem *timer_elem);
 
 
 template<class T, class Q>

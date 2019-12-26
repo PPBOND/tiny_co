@@ -2,7 +2,7 @@
 #include <dlfcn.h>
 
 
-
+typedef int (*socket_pfn_t)(int domain, int type, int protocol);
 typedef ssize_t (*read_pfn_t)(int fildes, void *buf, size_t nbyte);
 typedef int (*accept_pfn_t)(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 typedef ssize_t (*write_pfn_t)(int fildes, const void *buf, size_t nbyte);
@@ -17,7 +17,7 @@ typedef ssize_t (*sendto_pfn_t)(int socket, const void *message, size_t length,
 typedef ssize_t (*recvfrom_pfn_t)(int socket, void *buffer, size_t length,
 	                 int flags, struct sockaddr *address,
 					               socklen_t *address_len);
-
+typedef int (*close_pfn_t)(int fd);
 
 
 
@@ -30,21 +30,39 @@ static send_pfn_t g_sys_send_func 		  = (send_pfn_t)dlsym(RTLD_NEXT,"send");
 static sendto_pfn_t g_sys_sendto_func 	  = (sendto_pfn_t)dlsym(RTLD_NEXT,"sendto");
 static recvfrom_pfn_t g_sys_recvfrom_func = (recvfrom_pfn_t)dlsym(RTLD_NEXT,"recvfrom");
 static sleep_pfn_t g_sys_sleep_func       = (sleep_pfn_t)dlsym(RTLD_NEXT,"sleep");
+static socket_pfn_t g_sys_socket_func 	= (socket_pfn_t)dlsym(RTLD_NEXT,"socket");
+static close_pfn_t g_sys_close_func 	= (close_pfn_t)dlsym(RTLD_NEXT,"close");
 
 
-
-void onTimeout(void * data)
-{
-	CoRoutine_t* co = (CoRoutine_t*)data;
-	current_co->time_event->isexec = true;
-	co_resume(co);
-}
 extern "C" ssize_t read(int fd, void *buf, size_t count)
 {	
-	Event* ev = get_event_by_fd(fd);
-	ev.set_event(fd, EPOLLIN);
+	event_t* ev = get_event_by_fd(fd);
+	ev.set_event(EPOLLIN);
 	ev_register_to_manager(ev, 5);
     int ret = g_sys_read_func(fd, buf, count);
+	return ret;
+}
+
+
+
+extern "C" int socket(int domain, int type, int protocol)
+{
+
+	int fd = g_sys_socket_func(domain,type,protocol);
+	if( fd < 0 )
+	{
+		return fd;
+	}
+
+	alloc_event_by_fd( fd );	
+	return fd;
+}
+
+
+extern "C" int close(int fd)
+{
+	free_event_by_fd(fd);
+	int ret = g_sys_close_func(fd);
 	return ret;
 }
 

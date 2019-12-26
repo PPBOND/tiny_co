@@ -20,12 +20,12 @@ public:
     static void on_timeout(void *data){
         event_t* ev = (event_t*)data;
         ev->ret_status = EVENT_TIMEOUT;
-        //coroutine_t* time_co = ev->co;
-        //time_co->status = status::ready;
+        coroutine_t* time_co = ev->co;
+        time_co->status = status::ready;
     }
 
     event_t():event_timer(on_timeout, this, SOCK_TIMEOUT ,ONCE_EXEC),in_loop(false),
-    ev_changed(true)
+    ev_changed(true),fd(-1)
     {
         epoll_ev.data.ptr = this;
         epoll_ev.events = -100;
@@ -35,7 +35,7 @@ public:
 
     event_t(int _fd, int _events):
         event_timer(on_timeout,this, SOCK_TIMEOUT ,ONCE_EXEC),
-        in_loop(false),ev_changed(true)
+        fd(_fd),in_loop(false),ev_changed(true)
      {
         epoll_ev.events =_events;
         epoll_ev.data.ptr = this;
@@ -47,7 +47,7 @@ public:
     int set_event(int sockfd , int events);
 
     int fd() { 
-        return epoll_ev.data.fd; 
+        return fd; 
     }
     
     int ret_event() { 
@@ -61,22 +61,21 @@ public:
     int update_time(int timeout)
     {
         event_timer.update_time(timeout);    
-        //schedule_centor::add_timer(&event_timer);
+        schedule_centor::add_timer(&event_timer);
     }
 
    
     int remove_timer(){
-       // return schedule_centor::remove_timer(&event_timer);
+        return schedule_centor::remove_timer(&event_timer);
     }
     
+    int fd;
     int  ops;
     bool in_loop;
     bool ev_changed;
     int  ret_status;
     timer_event_t event_timer;
     struct epoll_event epoll_ev;
-   // coroutine_t* co;
-
 };
 
 

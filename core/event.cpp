@@ -15,11 +15,9 @@ int event_t::set_event(int sock_fd, int events)
     else
         ops = EPOLL_CTL_ADD;
 
+    this->fd = sock_fd;
     epoll_ev.events  = events; 
-    epoll_ev.data.fd = sock_fd;
     
-
-   
     
     return 0;
 }
